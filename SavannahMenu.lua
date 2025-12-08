@@ -2,6 +2,9 @@
 -- Press T → Kill Aura (40 studs)
 -- Press Y → Fly
 -- Press U → ESP
+-- Press L → Teleport to location
+-- Chat: ;goto playername → Teleport to player
+-- Chat: !rejoin → Rejoin server
 
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -31,6 +34,88 @@ local function sendNotification(title, text, duration)
         end)
         if success then break end
         task.wait(0.5)
+    end
+end
+
+-- FIND PLAYER BY PARTIAL NAME
+local function findPlayer(name)
+    name = name:lower()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player then
+            if p.Name:lower():sub(1, #name) == name or p.DisplayName:lower():sub(1, #name) == name then
+                return p
+            end
+        end
+    end
+    return nil
+end
+
+-- RAGDOLL TELEPORT TO PLAYER FUNCTION
+local function ragdollTeleportToPlayer(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then
+        sendNotification("Teleport Failed", "Player not found or has no character!", 3)
+        return
+    end
+    
+    local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetRoot then
+        sendNotification("Teleport Failed", "Target has no HumanoidRootPart!", 3)
+        return
+    end
+    
+    local char = player.Character
+    if not char or not char.PrimaryPart then
+        sendNotification("Teleport Failed", "You have no character!", 3)
+        return
+    end
+    
+    local humanoid = char:FindFirstChild("Humanoid")
+    if not humanoid then return end
+    
+    sendNotification("Teleporting", "Teleporting to " .. targetPlayer.Name .. "...", 3)
+    print("Teleporting to: " .. targetPlayer.Name)
+    
+    -- Use ragdoll teleport
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    
+    for i = 1, 25 do
+        if char and char.PrimaryPart and targetRoot and targetRoot.Parent then
+            local targetPos = targetRoot.Position + Vector3.new(5, 0, 5)
+            char:SetPrimaryPartCFrame(CFrame.new(targetPos))
+        end
+        task.wait()
+    end
+    
+    task.wait(1)
+    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    
+    for _ = 1, 10 do
+        char:SetAttribute("MovementDisabled", false)
+        task.wait(0.1)
+    end
+    
+    sendNotification("Teleport Complete", "Arrived at " .. targetPlayer.Name, 3)
+end
+
+-- TELEPORT TO LOCATION FUNCTION
+local function teleportToLocation(teleportCoordinates)
+    local char = player.Character or player.CharacterAdded:Wait()
+    if not char or not char.PrimaryPart then 
+        return 
+    end
+    local humanoid = char:WaitForChild("Humanoid")
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    for i = 1, 25 do
+        if char and char.PrimaryPart then
+            char:SetPrimaryPartCFrame(CFrame.new(teleportCoordinates))
+        end
+        task.wait()
+    end
+    task.wait(1)
+    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+    for _ = 1, 10 do
+        char:SetAttribute("MovementDisabled", false)
+        task.wait(0.1)
     end
 end
 
@@ -85,7 +170,7 @@ controlsLabel.Parent = bgFrame
 controlsLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
 controlsLabel.Position = UDim2.new(0.1, 0, 0.65, 0)
 controlsLabel.BackgroundTransparency = 1
-controlsLabel.Text = "T = Kill Aura | Y = Fly | U = ESP"
+controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | L = TP | ;goto name"
 controlsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
 controlsLabel.TextSize = 24
 controlsLabel.Font = Enum.Font.Gotham
@@ -141,6 +226,20 @@ pigLabel.Font = Enum.Font.FredokaOne
 pigLabel.TextStrokeTransparency = 0.5
 pigLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 
+-- CHAT COMMAND HINT (below watermark)
+local chatHintLabel = Instance.new("TextLabel")
+chatHintLabel.Parent = keybindGui
+chatHintLabel.Size = UDim2.new(0, 200, 0, 40)
+chatHintLabel.Position = UDim2.new(1, -210, 0, 50)
+chatHintLabel.BackgroundTransparency = 1
+chatHintLabel.BorderSizePixel = 0
+chatHintLabel.Text = ";goto name = TP to player\n!rejoin = Rejoin server"
+chatHintLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+chatHintLabel.TextSize = 14
+chatHintLabel.Font = Enum.Font.Gotham
+chatHintLabel.TextStrokeTransparency = 0.5
+chatHintLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+
 -- Function to update keybind display
 local function updateKeybindDisplay()
     local auraText = aura and "[ON]" or "[OFF]"
@@ -152,7 +251,7 @@ local function updateKeybindDisplay()
     local espColor = esp and "🟢" or "🔴"
     
     keybindText.Text = string.format(
-        "%s T-Aura %s | %s Y-Fly %s | %s U-ESP %s",
+        "%s T-Aura %s | %s Y-Fly %s | %s U-ESP %s | L-TP",
         auraColor, auraText,
         flyColor, flyText,
         espColor, espText
@@ -262,6 +361,55 @@ UIS.InputBegan:Connect(function(k)
         print(msg)
         sendNotification("ESP", msg, 3)
         updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.L then
+        print("Teleporting...")
+        sendNotification("Teleporting", "Teleporting to location...", 3)
+        spawn(function()
+            teleportToLocation(Vector3.new(-6405, 3, 4551))
+        end)
+    end
+end)
+
+-- CHAT COMMANDS
+player.Chatted:Connect(function(message)
+    -- Rejoin command
+    if message:lower() == "!rejoin" then
+        sendNotification("Rejoining", "Rejoining server...", 3)
+        print("Rejoining server...")
+        task.wait(0.5)
+        local TeleportService = game:GetService("TeleportService")
+        local success, errorMsg = pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end)
+        if not success then
+            TeleportService:Teleport(game.PlaceId, player)
+        end
+    end
+    
+    -- TELEPORT TO PLAYER COMMAND (;goto playername)
+    if message:lower():sub(1, 6) == ";goto " then
+        local targetName = message:sub(7)
+        if targetName ~= "" then
+            local targetPlayer = findPlayer(targetName)
+            if targetPlayer then
+                spawn(function()
+                    ragdollTeleportToPlayer(targetPlayer)
+                end)
+            else
+                sendNotification("Teleport Failed", "Player '" .. targetName .. "' not found!", 3)
+            end
+        end
+    end
+end)
+
+-- INFINITE STAMINA LOOP
+spawn(function()
+    while task.wait(0.1) do
+        if player.Character then
+            player.Character:SetAttribute("Stamina", 100)
+        end
     end
 end)
 
