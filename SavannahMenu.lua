@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
 
 -- REMOTES
@@ -18,12 +19,23 @@ local fly = false
 local esp = false
 local flySpeed = 60
 
+-- SAFE NOTIFICATION FUNCTION
+local function sendNotification(title, text, duration)
+    for i = 1, 10 do
+        local success = pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Duration = duration or 5
+            })
+        end)
+        if success then break end
+        task.wait(0.5)
+    end
+end
+
 -- STARTUP MESSAGE
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Mr.Pig says hello",
-    Text = "The script has launched successfully",
-    Duration = 5
-})
+sendNotification("Mr.Pig says hello", "The script has launched successfully", 5)
 print("Mr.Pig says hello - Script loaded!")
 
 -- Create startup screen
@@ -162,11 +174,7 @@ UIS.InputBegan:Connect(function(k)
         aura = not aura
         local msg = aura and "Kill Aura ON" or "Kill Aura OFF"
         print(msg)
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Kill Aura",
-            Text = msg,
-            Duration = 3
-        })
+        sendNotification("Kill Aura", msg, 3)
         updateKeybindDisplay()
     end
 
@@ -252,11 +260,7 @@ UIS.InputBegan:Connect(function(k)
         esp = not esp
         local msg = esp and "ESP ON" or "ESP OFF"
         print(msg)
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "ESP",
-            Text = msg,
-            Duration = 3
-        })
+        sendNotification("ESP", msg, 3)
         updateKeybindDisplay()
     end
 end)
@@ -405,7 +409,3 @@ spawn(function()
         updateESP()
     end
 end)
-message.txt
-15 KB
-message.txt
-15 KB
