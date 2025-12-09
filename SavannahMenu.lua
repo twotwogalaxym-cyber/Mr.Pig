@@ -2,8 +2,6 @@
 -- Press T → Kill Aura (40 studs)
 -- Press Y → Fly
 -- Press U → ESP
--- Press L → Teleport to location
--- Chat: ;goto playername → Teleport to player
 -- Chat: !rejoin → Rejoin server
 -- MOBILE: Tap buttons on screen!
 
@@ -35,87 +33,6 @@ local function sendNotification(title, text, duration)
         end)
         if success then break end
         task.wait(0.5)
-    end
-end
-
--- FIND PLAYER BY PARTIAL NAME
-local function findPlayer(name)
-    name = name:lower()
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player then
-            if p.Name:lower():sub(1, #name) == name or p.DisplayName:lower():sub(1, #name) == name then
-                return p
-            end
-        end
-    end
-    return nil
-end
-
--- RAGDOLL TELEPORT TO PLAYER FUNCTION
-local function ragdollTeleportToPlayer(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character then
-        sendNotification("Teleport Failed", "Player not found or has no character!", 3)
-        return
-    end
-    
-    local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not targetRoot then
-        sendNotification("Teleport Failed", "Target has no HumanoidRootPart!", 3)
-        return
-    end
-    
-    local char = player.Character
-    if not char or not char.PrimaryPart then
-        sendNotification("Teleport Failed", "You have no character!", 3)
-        return
-    end
-    
-    local humanoid = char:FindFirstChild("Humanoid")
-    if not humanoid then return end
-    
-    sendNotification("Teleporting", "Teleporting to " .. targetPlayer.Name .. "...", 3)
-    print("Teleporting to: " .. targetPlayer.Name)
-    
-    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-    
-    for i = 1, 25 do
-        if char and char.PrimaryPart and targetRoot and targetRoot.Parent then
-            local targetPos = targetRoot.Position + Vector3.new(5, 0, 5)
-            char:SetPrimaryPartCFrame(CFrame.new(targetPos))
-        end
-        task.wait()
-    end
-    
-    task.wait(1)
-    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-    
-    for _ = 1, 10 do
-        char:SetAttribute("MovementDisabled", false)
-        task.wait(0.1)
-    end
-    
-    sendNotification("Teleport Complete", "Arrived at " .. targetPlayer.Name, 3)
-end
-
--- TELEPORT TO LOCATION FUNCTION
-local function teleportToLocation(teleportCoordinates)
-    local char = player.Character or player.CharacterAdded:Wait()
-    if not char or not char.PrimaryPart then 
-        return 
-    end
-    local humanoid = char:WaitForChild("Humanoid")
-    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-    for i = 1, 25 do
-        if char and char.PrimaryPart then
-            char:SetPrimaryPartCFrame(CFrame.new(teleportCoordinates))
-        end
-        task.wait()
-    end
-    task.wait(1)
-    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-    for _ = 1, 10 do
-        char:SetAttribute("MovementDisabled", false)
-        task.wait(0.1)
     end
 end
 
@@ -170,7 +87,7 @@ controlsLabel.Parent = bgFrame
 controlsLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
 controlsLabel.Position = UDim2.new(0.1, 0, 0.65, 0)
 controlsLabel.BackgroundTransparency = 1
-controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | L = TP | ;goto name"
+controlsLabel.Text = "T = Aura | Y = Fly | U = ESP"
 controlsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
 controlsLabel.TextSize = 24
 controlsLabel.Font = Enum.Font.Gotham
@@ -187,21 +104,24 @@ task.delay(5, function()
 end)
 
 -- ==========================================
--- MOBILE GUI (CLICKABLE BUTTONS)
+-- MOBILE GUI (CLICKABLE BUTTONS) - FIXED FOR DELTA
 -- ==========================================
 local mobileGui = Instance.new("ScreenGui")
 mobileGui.Name = "MrPigMobileGUI"
 mobileGui.ResetOnSpawn = false
 mobileGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+mobileGui.IgnoreGuiInset = true -- Important for mobile!
 
--- Main container on left side
+-- Main container - TOP RIGHT corner (safer for mobile)
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = mobileGui
-mainFrame.Size = UDim2.new(0, 70, 0, 320)
-mainFrame.Position = UDim2.new(0, 10, 0.5, -160)
+mainFrame.Size = UDim2.new(0, 60, 0, 230)
+mainFrame.Position = UDim2.new(1, -70, 0, 100) -- Top right, below safe area
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true -- Can drag on mobile!
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 10)
@@ -215,12 +135,12 @@ mainStroke.Thickness = 2
 -- Title
 local mobileTitle = Instance.new("TextLabel")
 mobileTitle.Parent = mainFrame
-mobileTitle.Size = UDim2.new(1, 0, 0, 30)
+mobileTitle.Size = UDim2.new(1, 0, 0, 25)
 mobileTitle.Position = UDim2.new(0, 0, 0, 5)
 mobileTitle.BackgroundTransparency = 1
 mobileTitle.Text = "🐷"
 mobileTitle.TextColor3 = Color3.fromRGB(255, 105, 180)
-mobileTitle.TextSize = 20
+mobileTitle.TextSize = 18
 mobileTitle.Font = Enum.Font.FredokaOne
 
 -- Button creation function
@@ -228,14 +148,15 @@ local function createButton(name, position, defaultColor)
     local btn = Instance.new("TextButton")
     btn.Name = name
     btn.Parent = mainFrame
-    btn.Size = UDim2.new(0, 50, 0, 50)
+    btn.Size = UDim2.new(0, 50, 0, 45)
     btn.Position = position
     btn.BackgroundColor3 = defaultColor or Color3.fromRGB(60, 60, 60)
     btn.BorderSizePixel = 0
     btn.Text = name
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 14
+    btn.TextSize = 12
     btn.Font = Enum.Font.GothamBold
+    btn.AutoButtonColor = true
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 8)
@@ -244,13 +165,12 @@ local function createButton(name, position, defaultColor)
     return btn
 end
 
--- Create buttons
-local auraBtn = createButton("Aura", UDim2.new(0.5, -25, 0, 40))
-local flyBtn = createButton("Fly", UDim2.new(0.5, -25, 0, 95))
-local espBtn = createButton("ESP", UDim2.new(0.5, -25, 0, 150))
-local tpBtn = createButton("TP", UDim2.new(0.5, -25, 0, 205))
-local rejoinBtn = createButton("Rejoin", UDim2.new(0.5, -25, 0, 260))
-rejoinBtn.TextSize = 10
+-- Create buttons (stacked vertically)
+local auraBtn = createButton("Aura", UDim2.new(0.5, -25, 0, 35))
+local flyBtn = createButton("Fly", UDim2.new(0.5, -25, 0, 85))
+local espBtn = createButton("ESP", UDim2.new(0.5, -25, 0, 135))
+local rejoinBtn = createButton("Rejoin", UDim2.new(0.5, -25, 0, 185))
+rejoinBtn.TextSize = 9
 
 -- Function to update button colors
 local function updateButtonColors()
@@ -261,6 +181,14 @@ end
 
 -- Button click handlers
 auraBtn.MouseButton1Click:Connect(function()
+    aura = not aura
+    local msg = aura and "Kill Aura ON" or "Kill Aura OFF"
+    print(msg)
+    sendNotification("Kill Aura", msg, 3)
+    updateButtonColors()
+end)
+
+auraBtn.TouchTap:Connect(function()
     aura = not aura
     local msg = aura and "Kill Aura ON" or "Kill Aura OFF"
     print(msg)
@@ -354,14 +282,6 @@ espBtn.MouseButton1Click:Connect(function()
     updateButtonColors()
 end)
 
-tpBtn.MouseButton1Click:Connect(function()
-    print("Teleporting...")
-    sendNotification("Teleporting", "Teleporting to location...", 3)
-    spawn(function()
-        teleportToLocation(Vector3.new(-6405, 3, 4551))
-    end)
-end)
-
 rejoinBtn.MouseButton1Click:Connect(function()
     sendNotification("Rejoining", "Rejoining server...", 3)
     print("Rejoining server...")
@@ -405,33 +325,19 @@ keybindText.Text = "Loading..."
 
 keybindGui.Parent = player:WaitForChild("PlayerGui")
 
--- MR. PIG WATERMARK (top right)
+-- MR. PIG WATERMARK (top left for mobile)
 local pigLabel = Instance.new("TextLabel")
 pigLabel.Parent = keybindGui
-pigLabel.Size = UDim2.new(0, 150, 0, 40)
-pigLabel.Position = UDim2.new(1, -160, 0, 10)
+pigLabel.Size = UDim2.new(0, 120, 0, 30)
+pigLabel.Position = UDim2.new(0, 10, 0, 10)
 pigLabel.BackgroundTransparency = 1
 pigLabel.BorderSizePixel = 0
 pigLabel.Text = "Mr.Pig 🐷"
 pigLabel.TextColor3 = Color3.fromRGB(255, 105, 180)
-pigLabel.TextSize = 24
+pigLabel.TextSize = 20
 pigLabel.Font = Enum.Font.FredokaOne
 pigLabel.TextStrokeTransparency = 0.5
 pigLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-
--- CHAT COMMAND HINT (below watermark)
-local chatHintLabel = Instance.new("TextLabel")
-chatHintLabel.Parent = keybindGui
-chatHintLabel.Size = UDim2.new(0, 200, 0, 40)
-chatHintLabel.Position = UDim2.new(1, -210, 0, 50)
-chatHintLabel.BackgroundTransparency = 1
-chatHintLabel.BorderSizePixel = 0
-chatHintLabel.Text = ";goto name = TP to player\n!rejoin = Rejoin server"
-chatHintLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
-chatHintLabel.TextSize = 14
-chatHintLabel.Font = Enum.Font.Gotham
-chatHintLabel.TextStrokeTransparency = 0.5
-chatHintLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 
 -- Function to update keybind display
 local function updateKeybindDisplay()
@@ -444,7 +350,7 @@ local function updateKeybindDisplay()
     local espColor = esp and "🟢" or "🔴"
     
     keybindText.Text = string.format(
-        "%s T-Aura %s | %s Y-Fly %s | %s U-ESP %s | L-TP",
+        "%s T-Aura %s | %s Y-Fly %s | %s U-ESP %s",
         auraColor, auraText,
         flyColor, flyText,
         espColor, espText
@@ -557,14 +463,6 @@ UIS.InputBegan:Connect(function(k)
         sendNotification("ESP", msg, 3)
         updateKeybindDisplay()
     end
-    
-    if k.KeyCode == Enum.KeyCode.L then
-        print("Teleporting...")
-        sendNotification("Teleporting", "Teleporting to location...", 3)
-        spawn(function()
-            teleportToLocation(Vector3.new(-6405, 3, 4551))
-        end)
-    end
 end)
 
 -- CHAT COMMANDS
@@ -579,20 +477,6 @@ player.Chatted:Connect(function(message)
         end)
         if not success then
             TeleportService:Teleport(game.PlaceId, player)
-        end
-    end
-    
-    if message:lower():sub(1, 6) == ";goto " then
-        local targetName = message:sub(7)
-        if targetName ~= "" then
-            local targetPlayer = findPlayer(targetName)
-            if targetPlayer then
-                spawn(function()
-                    ragdollTeleportToPlayer(targetPlayer)
-                end)
-            else
-                sendNotification("Teleport Failed", "Player '" .. targetName .. "' not found!", 3)
-            end
         end
     end
 end)
