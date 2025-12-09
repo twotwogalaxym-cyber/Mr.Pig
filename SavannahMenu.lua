@@ -5,6 +5,7 @@
 -- Press L → Teleport to location
 -- Chat: ;goto playername → Teleport to player
 -- Chat: !rejoin → Rejoin server
+-- MOBILE: Tap buttons on screen!
 
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -75,7 +76,6 @@ local function ragdollTeleportToPlayer(targetPlayer)
     sendNotification("Teleporting", "Teleporting to " .. targetPlayer.Name .. "...", 3)
     print("Teleporting to: " .. targetPlayer.Name)
     
-    -- Use ragdoll teleport
     humanoid:ChangeState(Enum.HumanoidStateType.Physics)
     
     for i = 1, 25 do
@@ -186,7 +186,200 @@ task.delay(5, function()
     end
 end)
 
--- PERMANENT KEYBIND DISPLAY
+-- ==========================================
+-- MOBILE GUI (CLICKABLE BUTTONS)
+-- ==========================================
+local mobileGui = Instance.new("ScreenGui")
+mobileGui.Name = "MrPigMobileGUI"
+mobileGui.ResetOnSpawn = false
+mobileGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Main container on left side
+local mainFrame = Instance.new("Frame")
+mainFrame.Parent = mobileGui
+mainFrame.Size = UDim2.new(0, 70, 0, 320)
+mainFrame.Position = UDim2.new(0, 10, 0.5, -160)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.BorderSizePixel = 0
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Parent = mainFrame
+mainStroke.Color = Color3.fromRGB(255, 105, 180)
+mainStroke.Thickness = 2
+
+-- Title
+local mobileTitle = Instance.new("TextLabel")
+mobileTitle.Parent = mainFrame
+mobileTitle.Size = UDim2.new(1, 0, 0, 30)
+mobileTitle.Position = UDim2.new(0, 0, 0, 5)
+mobileTitle.BackgroundTransparency = 1
+mobileTitle.Text = "🐷"
+mobileTitle.TextColor3 = Color3.fromRGB(255, 105, 180)
+mobileTitle.TextSize = 20
+mobileTitle.Font = Enum.Font.FredokaOne
+
+-- Button creation function
+local function createButton(name, position, defaultColor)
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Parent = mainFrame
+    btn.Size = UDim2.new(0, 50, 0, 50)
+    btn.Position = position
+    btn.BackgroundColor3 = defaultColor or Color3.fromRGB(60, 60, 60)
+    btn.BorderSizePixel = 0
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 14
+    btn.Font = Enum.Font.GothamBold
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    return btn
+end
+
+-- Create buttons
+local auraBtn = createButton("Aura", UDim2.new(0.5, -25, 0, 40))
+local flyBtn = createButton("Fly", UDim2.new(0.5, -25, 0, 95))
+local espBtn = createButton("ESP", UDim2.new(0.5, -25, 0, 150))
+local tpBtn = createButton("TP", UDim2.new(0.5, -25, 0, 205))
+local rejoinBtn = createButton("Rejoin", UDim2.new(0.5, -25, 0, 260))
+rejoinBtn.TextSize = 10
+
+-- Function to update button colors
+local function updateButtonColors()
+    auraBtn.BackgroundColor3 = aura and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
+    flyBtn.BackgroundColor3 = fly and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
+    espBtn.BackgroundColor3 = esp and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
+end
+
+-- Button click handlers
+auraBtn.MouseButton1Click:Connect(function()
+    aura = not aura
+    local msg = aura and "Kill Aura ON" or "Kill Aura OFF"
+    print(msg)
+    sendNotification("Kill Aura", msg, 3)
+    updateButtonColors()
+end)
+
+flyBtn.MouseButton1Click:Connect(function()
+    fly = not fly
+    if fly then
+        local char = player.Character
+        if char then
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if root then
+                local bv = Instance.new("BodyVelocity")
+                bv.Name = "FlyVelocity"
+                bv.Parent = root
+                bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                bv.Velocity = Vector3.new(0, 0, 0)
+                
+                local bg = Instance.new("BodyGyro")
+                bg.Name = "FlyGyro"
+                bg.Parent = root
+                bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                bg.CFrame = root.CFrame
+                
+                local connection
+                connection = RunService.Heartbeat:Connect(function()
+                    if not fly or not char or not root or not root.Parent then
+                        if bv then bv:Destroy() end
+                        if bg then bg:Destroy() end
+                        if connection then connection:Disconnect() end
+                        return
+                    end
+                    
+                    if UIS:GetFocusedTextBox() then
+                        bv.Velocity = Vector3.new(0, 0, 0)
+                        return
+                    end
+                    
+                    local cam = workspace.CurrentCamera
+                    local speed = flySpeed
+                    local move = Vector3.new(0, 0, 0)
+                    
+                    if UIS:IsKeyDown(Enum.KeyCode.W) then
+                        move = move + (cam.CFrame.LookVector * speed)
+                    end
+                    if UIS:IsKeyDown(Enum.KeyCode.S) then
+                        move = move - (cam.CFrame.LookVector * speed)
+                    end
+                    if UIS:IsKeyDown(Enum.KeyCode.D) then
+                        move = move + (cam.CFrame.RightVector * speed)
+                    end
+                    if UIS:IsKeyDown(Enum.KeyCode.A) then
+                        move = move - (cam.CFrame.RightVector * speed)
+                    end
+                    if UIS:IsKeyDown(Enum.KeyCode.Space) then
+                        move = move + Vector3.new(0, speed, 0)
+                    end
+                    if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
+                        move = move - Vector3.new(0, speed, 0)
+                    end
+                    
+                    bv.Velocity = move
+                    bg.CFrame = cam.CFrame
+                end)
+                print("Fly ON")
+            end
+        end
+    else
+        local char = player.Character
+        if char then
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if root then
+                local bv = root:FindFirstChild("FlyVelocity")
+                local bg = root:FindFirstChild("FlyGyro")
+                if bv then bv:Destroy() end
+                if bg then bg:Destroy() end
+            end
+        end
+        print("Fly OFF")
+    end
+    updateButtonColors()
+end)
+
+espBtn.MouseButton1Click:Connect(function()
+    esp = not esp
+    local msg = esp and "ESP ON" or "ESP OFF"
+    print(msg)
+    sendNotification("ESP", msg, 3)
+    updateButtonColors()
+end)
+
+tpBtn.MouseButton1Click:Connect(function()
+    print("Teleporting...")
+    sendNotification("Teleporting", "Teleporting to location...", 3)
+    spawn(function()
+        teleportToLocation(Vector3.new(-6405, 3, 4551))
+    end)
+end)
+
+rejoinBtn.MouseButton1Click:Connect(function()
+    sendNotification("Rejoining", "Rejoining server...", 3)
+    print("Rejoining server...")
+    task.wait(0.5)
+    local TeleportService = game:GetService("TeleportService")
+    local success, errorMsg = pcall(function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+    end)
+    if not success then
+        TeleportService:Teleport(game.PlaceId, player)
+    end
+end)
+
+mobileGui.Parent = player:WaitForChild("PlayerGui")
+
+-- ==========================================
+-- KEYBIND DISPLAY (BOTTOM)
+-- ==========================================
 local keybindGui = Instance.new("ScreenGui")
 keybindGui.Name = "KeybindDisplay"
 keybindGui.ResetOnSpawn = false
@@ -256,6 +449,8 @@ local function updateKeybindDisplay()
         flyColor, flyText,
         espColor, espText
     )
+    
+    updateButtonColors()
 end
 
 -- Update display every 0.5 seconds
@@ -265,7 +460,7 @@ spawn(function()
     end
 end)
 
--- KEYBINDS
+-- KEYBINDS (for PC users)
 UIS.InputBegan:Connect(function(k)
     if UIS:GetFocusedTextBox() then return end
     
@@ -374,7 +569,6 @@ end)
 
 -- CHAT COMMANDS
 player.Chatted:Connect(function(message)
-    -- Rejoin command
     if message:lower() == "!rejoin" then
         sendNotification("Rejoining", "Rejoining server...", 3)
         print("Rejoining server...")
@@ -388,7 +582,6 @@ player.Chatted:Connect(function(message)
         end
     end
     
-    -- TELEPORT TO PLAYER COMMAND (;goto playername)
     if message:lower():sub(1, 6) == ";goto " then
         local targetName = message:sub(7)
         if targetName ~= "" then
