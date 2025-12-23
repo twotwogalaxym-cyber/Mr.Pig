@@ -3,7 +3,6 @@
 -- Press Y → Fly (UNIVERSAL - works on all executors)
 -- Press U → ESP
 -- Press Z → Godmode
--- Press O → Give Godmode
 -- Chat: !rejoin → Rejoin server
 -- MOBILE: Tap buttons on screen!
 
@@ -97,7 +96,7 @@ controlsLabel.Parent = bgFrame
 controlsLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
 controlsLabel.Position = UDim2.new(0.1, 0, 0.65, 0)
 controlsLabel.BackgroundTransparency = 1
-controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | Z = God | O = GiveGod"
+controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | Z = God"
 controlsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
 controlsLabel.TextSize = 24
 controlsLabel.Font = Enum.Font.Gotham
@@ -179,7 +178,7 @@ local function startFly()
         if UIS:IsKeyDown(Enum.KeyCode.Space) then
             moveDir = moveDir + Vector3.new(0, 1, 0)
         end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftShift) or UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
             moveDir = moveDir - Vector3.new(0, 1, 0)
         end
         
@@ -195,7 +194,7 @@ local function startFly()
     end)
     
     print("Fly ON")
-    sendNotification("Fly", "ON - WASD + Space/Shift", 3)
+    sendNotification("Fly", "ON - WASD + Space/Ctrl", 3)
 end
 
 local function stopFly()
@@ -281,41 +280,6 @@ local function toggleGodmode()
     end
 end
 
-local function giveGodmode()
-    local char = player.Character
-    if not char then return end
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    
-    local closestPlayer = nil
-    local closestDistance = 50
-    
-    for _, v in pairs(Players:GetPlayers()) do
-        if v == player then continue end
-        local hum = v.Character and v.Character:FindFirstChildOfClass("Humanoid")
-        local hrp = v.Character and v.Character:FindFirstChild("HumanoidRootPart")
-        if hum and hrp then
-            local distance = (root.Position - hrp.Position).Magnitude
-            if distance < closestDistance then
-                closestDistance = distance
-                closestPlayer = {humanoid = hum, name = v.Name}
-            end
-        end
-    end
-    
-    if closestPlayer then
-        for i = 1, 10 do
-            pcall(function()
-                ChargedAttack:FireServer(closestPlayer.humanoid, 0/0)
-            end)
-        end
-        sendNotification("Give Godmode", "Sent to " .. closestPlayer.name, 3)
-        print("Gave godmode to " .. closestPlayer.name)
-    else
-        sendNotification("Give Godmode", "No player nearby!", 3)
-    end
-end
-
 -- ==========================================
 -- MOBILE GUI (CLICKABLE BUTTONS)
 -- ==========================================
@@ -328,7 +292,7 @@ mobileGui.IgnoreGuiInset = true
 -- Main container
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = mobileGui
-mainFrame.Size = UDim2.new(0, 60, 0, 280)
+mainFrame.Size = UDim2.new(0, 60, 0, 210)
 mainFrame.Position = UDim2.new(1, -70, 0, 100)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.3
@@ -383,8 +347,6 @@ local auraBtn = createButton("Aura", UDim2.new(0.5, -25, 0, 32))
 local flyBtn = createButton("Fly", UDim2.new(0.5, -25, 0, 77))
 local espBtn = createButton("ESP", UDim2.new(0.5, -25, 0, 122))
 local godBtn = createButton("God", UDim2.new(0.5, -25, 0, 167))
-local giveBtn = createButton("Give", UDim2.new(0.5, -25, 0, 212))
-giveBtn.TextSize = 9
 
 -- Function to update button colors
 local function updateButtonColors()
@@ -415,10 +377,6 @@ godBtn.MouseButton1Click:Connect(function()
     updateButtonColors()
 end)
 
-giveBtn.MouseButton1Click:Connect(function()
-    giveGodmode()
-end)
-
 mobileGui.Parent = player:WaitForChild("PlayerGui")
 
 -- ==========================================
@@ -431,8 +389,8 @@ keybindGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local keybindFrame = Instance.new("Frame")
 keybindFrame.Parent = keybindGui
-keybindFrame.Size = UDim2.new(0, 700, 0, 80)
-keybindFrame.Position = UDim2.new(0.5, -350, 1, -90)
+keybindFrame.Size = UDim2.new(0, 500, 0, 80)
+keybindFrame.Position = UDim2.new(0.5, -250, 1, -90)
 keybindFrame.BackgroundTransparency = 1
 keybindFrame.BorderSizePixel = 0
 
@@ -471,7 +429,7 @@ local function updateKeybindDisplay()
     local godColor = godmode and "🟢" or "🔴"
     
     keybindText.Text = string.format(
-        "%s T-Aura | %s Y-Fly | %s U-ESP | %s Z-God | O-GiveGod",
+        "%s T-Aura | %s Y-Fly | %s U-ESP | %s Z-God",
         auraColor, flyColor, espColor, godColor
     )
     
@@ -514,10 +472,6 @@ UIS.InputBegan:Connect(function(k, gp)
     if k.KeyCode == Enum.KeyCode.Z then
         toggleGodmode()
         updateKeybindDisplay()
-    end
-    
-    if k.KeyCode == Enum.KeyCode.O then
-        giveGodmode()
     end
 end)
 
@@ -694,9 +648,8 @@ print("==========================================")
 print("🐷 MR.PIG SCRIPT LOADED 🐷")
 print("")
 print("T = Kill Aura")
-print("Y = Fly (WASD + Space/Shift)")
+print("Y = Fly (WASD + Space/Ctrl)")
 print("U = ESP")
 print("Z = Godmode")
-print("O = Give Godmode")
 print("!rejoin = Rejoin server")
 print("==========================================")
