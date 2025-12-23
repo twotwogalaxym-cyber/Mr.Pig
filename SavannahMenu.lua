@@ -1,9 +1,10 @@
--- Savannah Life: Kill Aura + ESP + Fly
+-- Savannah Life: Kill Aura + ESP + Fly + Noclip
 -- Press T → Kill Aura (40 studs)
 -- Press Y → Fly (UNIVERSAL - works on all executors)
 -- Press U → ESP
 -- Press Z → Godmode
--- Chat: !rejoin → Rejoin server
+-- Press X → Noclip
+-- Press / (slash) → Open Command Bar
 -- MOBILE: Tap buttons on screen!
 
 local Players = game:GetService("Players")
@@ -23,12 +24,18 @@ local aura = false
 local fly = false
 local esp = false
 local godmode = false
+local noclip = false
 local flySpeed = 60
+local viewingPlayer = nil
 
 -- FLY VARIABLES
 local flyConnection = nil
 local bodyVelocity = nil
 local bodyGyro = nil
+
+-- NOCLIP VARIABLES
+local noclipConnection = nil
+local originalCollisions = {}
 
 -- SAFE NOTIFICATION FUNCTION
 local function sendNotification(title, text, duration)
@@ -96,7 +103,7 @@ controlsLabel.Parent = bgFrame
 controlsLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
 controlsLabel.Position = UDim2.new(0.1, 0, 0.65, 0)
 controlsLabel.BackgroundTransparency = 1
-controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | Z = God"
+controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | Z = God | X = Noclip | / = Commands"
 controlsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
 controlsLabel.TextSize = 24
 controlsLabel.Font = Enum.Font.Gotham
@@ -255,6 +262,72 @@ player.CharacterAdded:Connect(function(char)
 end)
 
 -- ==========================================
+-- NOCLIP FUNCTIONS
+-- ==========================================
+local function startNoclip()
+    local char = player.Character
+    if not char then return end
+    
+    -- Store original collision groups
+    originalCollisions = {}
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            originalCollisions[part] = part.CanCollide
+            part.CanCollide = false
+        end
+    end
+    
+    noclipConnection = RunService.Heartbeat:Connect(function()
+        if not noclip or not char or not char.Parent then return end
+        
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end)
+    
+    print("Noclip ON")
+    sendNotification("Noclip", "ON", 3)
+end
+
+local function stopNoclip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+    
+    local char = player.Character
+    if char then
+        for part, collide in pairs(originalCollisions) do
+            if part and part.Parent then
+                part.CanCollide = collide
+            end
+        end
+    end
+    
+    originalCollisions = {}
+    print("Noclip OFF")
+    sendNotification("Noclip", "OFF", 3)
+end
+
+local function toggleNoclip()
+    noclip = not noclip
+    if noclip then
+        startNoclip()
+    else
+        stopNoclip()
+    end
+end
+
+player.CharacterAdded:Connect(function(char)
+    if noclip then
+        task.wait(0.5)
+        startNoclip()
+    end
+end)
+
+-- ==========================================
 -- GODMODE FUNCTIONS
 -- ==========================================
 local godmodeLoop = nil
@@ -281,6 +354,178 @@ local function toggleGodmode()
 end
 
 -- ==========================================
+-- VIEW PLAYER FUNCTION
+-- ==========================================
+local function viewPlayer(targetName)
+    local targetPlayer = nil
+    
+    -- Try to find exact match first
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Name:lower() == targetName:lower() then
+            targetPlayer = p
+            break
+        end
+    end
+    
+    -- Try partial match if no exact match
+    if not targetPlayer then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Name:lower():find(targetName:lower()) then
+                targetPlayer = p
+                break
+            end
+        end
+    end
+    
+    if targetPlayer and targetPlayer ~= player then
+        if targetPlayer.Character then
+            viewingPlayer = targetPlayer
+            local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetRoot then
+                workspace.CurrentCamera.CFrame = targetRoot.CFrame + targetRoot.CFrame.LookVector * 10
+                sendNotification("Viewing", "Now viewing " .. targetPlayer.Name, 3)
+                return true
+            end
+        end
+    end
+    
+    sendNotification("View Player", "Player not found!", 3)
+    return false
+end
+
+local function stopViewing()
+    if player.Character then
+        local root = player.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            workspace.CurrentCamera.Focus = root.CFrame
+            workspace.CurrentCamera.CFrame = root.CFrame + root.CFrame.LookVector * 10
+        end
+    end
+    viewingPlayer = nil
+    sendNotification("Viewing", "Stopped viewing", 3)
+end
+
+-- Update viewing camera
+spawn(function()
+    while task.wait(0.1) do
+        if viewingPlayer and viewingPlayer.Character then
+            local targetRoot = viewingPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetRoot then
+                workspace.CurrentCamera.CFrame = targetRoot.CFrame + targetRoot.CFrame.LookVector * 10
+            end
+        end
+    end
+end)
+
+-- ==========================================
+-- RESET FUNCTION
+-- ==========================================
+local function resetPlayer()
+    local char = player.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.Health = 0
+            sendNotification("Reset", "Respawning...", 2)
+        end
+    end
+end
+
+-- ==========================================
+-- COMMAND BAR
+-- ==========================================
+local commandBarOpen = false
+local commandGui = nil
+
+local function createCommandBar()
+    if commandGui then commandGui:Destroy() end
+    
+    commandGui = Instance.new("ScreenGui")
+    commandGui.Name = "CommandBar"
+    commandGui.ResetOnSpawn = false
+    commandGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local bgFrame = Instance.new("Frame")
+    bgFrame.Parent = commandGui
+    bgFrame.Size = UDim2.new(0, 500, 0, 50)
+    bgFrame.Position = UDim2.new(0.5, -250, 0.5, -25)
+    bgFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    bgFrame.BorderSizePixel = 0
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = bgFrame
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Parent = bgFrame
+    stroke.Color = Color3.fromRGB(255, 105, 180)
+    stroke.Thickness = 2
+    
+    local textBox = Instance.new("TextBox")
+    textBox.Parent = bgFrame
+    textBox.Size = UDim2.new(1, -20, 1, 0)
+    textBox.Position = UDim2.new(0, 10, 0, 0)
+    textBox.BackgroundTransparency = 1
+    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBox.TextSize = 18
+    textBox.Font = Enum.Font.GothamBold
+    textBox.PlaceholderText = "Commands: speed <number>, view <player>, reset, stop"
+    textBox.Text = ""
+    
+    textBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local cmd = textBox.Text:lower():gsub("^%s+|%s+$", "")
+            local parts = cmd:split(" ")
+            local command = parts[1]
+            
+            if command == "speed" then
+                local newSpeed = tonumber(parts[2])
+                if newSpeed then
+                    flySpeed = newSpeed
+                    sendNotification("Speed", "Set to " .. newSpeed, 3)
+                else
+                    sendNotification("Speed", "Usage: speed <number>", 3)
+                end
+            elseif command == "view" then
+                local targetName = table.concat(parts, " ", 2)
+                if targetName and targetName ~= "" then
+                    viewPlayer(targetName)
+                else
+                    sendNotification("View", "Usage: view <player>", 3)
+                end
+            elseif command == "stop" then
+                stopViewing()
+            elseif command == "reset" then
+                resetPlayer()
+            else
+                sendNotification("Command", "Unknown command: " .. command, 3)
+            end
+            
+            commandGui:Destroy()
+            commandGui = nil
+            commandBarOpen = false
+        end
+    end)
+    
+    commandGui.Parent = player:WaitForChild("PlayerGui")
+    task.wait(0.1)
+    textBox:CaptureFocus()
+end
+
+local function toggleCommandBar()
+    if commandBarOpen then
+        if commandGui then
+            commandGui:Destroy()
+            commandGui = nil
+        end
+        commandBarOpen = false
+    else
+        commandBarOpen = true
+        createCommandBar()
+    end
+end
+
+-- ==========================================
 -- MOBILE GUI (CLICKABLE BUTTONS)
 -- ==========================================
 local mobileGui = Instance.new("ScreenGui")
@@ -292,7 +537,7 @@ mobileGui.IgnoreGuiInset = true
 -- Main container
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = mobileGui
-mainFrame.Size = UDim2.new(0, 60, 0, 210)
+mainFrame.Size = UDim2.new(0, 60, 0, 300)
 mainFrame.Position = UDim2.new(1, -70, 0, 100)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.3
@@ -347,6 +592,8 @@ local auraBtn = createButton("Aura", UDim2.new(0.5, -25, 0, 32))
 local flyBtn = createButton("Fly", UDim2.new(0.5, -25, 0, 77))
 local espBtn = createButton("ESP", UDim2.new(0.5, -25, 0, 122))
 local godBtn = createButton("God", UDim2.new(0.5, -25, 0, 167))
+local noclipBtn = createButton("Clip", UDim2.new(0.5, -25, 0, 212))
+local cmdBtn = createButton("Cmd", UDim2.new(0.5, -25, 0, 257))
 
 -- Function to update button colors
 local function updateButtonColors()
@@ -354,6 +601,7 @@ local function updateButtonColors()
     flyBtn.BackgroundColor3 = fly and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
     espBtn.BackgroundColor3 = esp and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
     godBtn.BackgroundColor3 = godmode and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
+    noclipBtn.BackgroundColor3 = noclip and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
 end
 
 -- Button click handlers
@@ -377,6 +625,15 @@ godBtn.MouseButton1Click:Connect(function()
     updateButtonColors()
 end)
 
+noclipBtn.MouseButton1Click:Connect(function()
+    toggleNoclip()
+    updateButtonColors()
+end)
+
+cmdBtn.MouseButton1Click:Connect(function()
+    toggleCommandBar()
+end)
+
 mobileGui.Parent = player:WaitForChild("PlayerGui")
 
 -- ==========================================
@@ -389,8 +646,8 @@ keybindGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local keybindFrame = Instance.new("Frame")
 keybindFrame.Parent = keybindGui
-keybindFrame.Size = UDim2.new(0, 500, 0, 80)
-keybindFrame.Position = UDim2.new(0.5, -250, 1, -90)
+keybindFrame.Size = UDim2.new(0, 600, 0, 80)
+keybindFrame.Position = UDim2.new(0.5, -300, 1, -90)
 keybindFrame.BackgroundTransparency = 1
 keybindFrame.BorderSizePixel = 0
 
@@ -427,10 +684,11 @@ local function updateKeybindDisplay()
     local flyColor = fly and "🟢" or "🔴"
     local espColor = esp and "🟢" or "🔴"
     local godColor = godmode and "🟢" or "🔴"
+    local noclipColor = noclip and "🟢" or "🔴"
     
     keybindText.Text = string.format(
-        "%s T-Aura | %s Y-Fly | %s U-ESP | %s Z-God",
-        auraColor, flyColor, espColor, godColor
+        "%s T-Aura | %s Y-Fly | %s U-ESP | %s Z-God | %s X-Clip | /-Cmd",
+        auraColor, flyColor, espColor, godColor, noclipColor
     )
     
     updateButtonColors()
@@ -472,6 +730,15 @@ UIS.InputBegan:Connect(function(k, gp)
     if k.KeyCode == Enum.KeyCode.Z then
         toggleGodmode()
         updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.X then
+        toggleNoclip()
+        updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.Slash then
+        toggleCommandBar()
     end
 end)
 
@@ -651,5 +918,14 @@ print("T = Kill Aura")
 print("Y = Fly (WASD + Space/Ctrl)")
 print("U = ESP")
 print("Z = Godmode")
+print("X = Noclip")
+print("/ = Command Bar")
+print("")
+print("Commands:")
+print("  speed <number> - Change fly speed")
+print("  view <player> - View another player's camera")
+print("  stop - Stop viewing")
+print("  reset - Reset instantly")
+print("")
 print("!rejoin = Rejoin server")
 print("==========================================")
