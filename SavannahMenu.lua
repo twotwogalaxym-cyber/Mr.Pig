@@ -1,11 +1,11 @@
--- Savannah Life: Kill Aura + ESP + Fly + Noclip
+-- Savannah Life: Kill Aura + ESP + Fly + Noclip (MOBILE FLY FIXED)
 -- Press T → Kill Aura (40 studs)
 -- Press Y → Fly (UNIVERSAL - works on all executors)
 -- Press U → ESP
 -- Press Z → Godmode
 -- Press X → Noclip
 -- Press / (slash) → Open Command Bar
--- MOBILE: Tap buttons on screen!
+-- MOBILE: Tap buttons on screen! (▲▼ for fly up/down)
 
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -32,6 +32,16 @@ local viewingPlayer = nil
 local flyConnection = nil
 local bodyVelocity = nil
 local bodyGyro = nil
+
+-- MOBILE FLY VARIABLES - Track which movement keys are pressed on mobile
+local mobileKeysPressed = {
+    W = false,
+    A = false,
+    S = false,
+    D = false,
+    Space = false,
+    Ctrl = false
+}
 
 -- NOCLIP VARIABLES
 local noclipConnection = nil
@@ -120,7 +130,7 @@ task.delay(5, function()
 end)
 
 -- ==========================================
--- UNIVERSAL FLY FUNCTION
+-- UNIVERSAL FLY FUNCTION WITH MOBILE SUPPORT
 -- ==========================================
 local function startFly()
     local char = player.Character
@@ -154,7 +164,7 @@ local function startFly()
     bodyGyro.CFrame = root.CFrame
     bodyGyro.Parent = root
     
-    -- Fly loop
+    -- Fly loop - checks both keyboard AND mobile keys
     flyConnection = RunService.Heartbeat:Connect(function()
         if not fly then return end
         if not char or not char.Parent then
@@ -169,23 +179,23 @@ local function startFly()
         local camera = workspace.CurrentCamera
         local moveDir = Vector3.new(0, 0, 0)
         
-        -- Get input
-        if UIS:IsKeyDown(Enum.KeyCode.W) then
+        -- Get input from BOTH keyboard and mobile buttons
+        if UIS:IsKeyDown(Enum.KeyCode.W) or mobileKeysPressed.W then
             moveDir = moveDir + camera.CFrame.LookVector
         end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then
+        if UIS:IsKeyDown(Enum.KeyCode.S) or mobileKeysPressed.S then
             moveDir = moveDir - camera.CFrame.LookVector
         end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then
+        if UIS:IsKeyDown(Enum.KeyCode.A) or mobileKeysPressed.A then
             moveDir = moveDir - camera.CFrame.RightVector
         end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then
+        if UIS:IsKeyDown(Enum.KeyCode.D) or mobileKeysPressed.D then
             moveDir = moveDir + camera.CFrame.RightVector
         end
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then
+        if UIS:IsKeyDown(Enum.KeyCode.Space) or mobileKeysPressed.Space then
             moveDir = moveDir + Vector3.new(0, 1, 0)
         end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) or mobileKeysPressed.Ctrl then
             moveDir = moveDir - Vector3.new(0, 1, 0)
         end
         
@@ -526,7 +536,7 @@ local function toggleCommandBar()
 end
 
 -- ==========================================
--- MOBILE GUI (CLICKABLE BUTTONS)
+-- MOBILE GUI (CLICKABLE BUTTONS WITH FLY CONTROLS)
 -- ==========================================
 local mobileGui = Instance.new("ScreenGui")
 mobileGui.Name = "MrPigMobileGUI"
@@ -537,7 +547,7 @@ mobileGui.IgnoreGuiInset = true
 -- Main container
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = mobileGui
-mainFrame.Size = UDim2.new(0, 60, 0, 300)
+mainFrame.Size = UDim2.new(0, 60, 0, 400)
 mainFrame.Position = UDim2.new(1, -70, 0, 100)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.3
@@ -595,6 +605,10 @@ local godBtn = createButton("God", UDim2.new(0.5, -25, 0, 167))
 local noclipBtn = createButton("Clip", UDim2.new(0.5, -25, 0, 212))
 local cmdBtn = createButton("Cmd", UDim2.new(0.5, -25, 0, 257))
 
+-- MOBILE FLY MOVEMENT BUTTONS
+local flyUpBtn = createButton("▲", UDim2.new(0.5, -25, 0, 302))
+local flyDownBtn = createButton("▼", UDim2.new(0.5, -25, 0, 347))
+
 -- Function to update button colors
 local function updateButtonColors()
     auraBtn.BackgroundColor3 = aura and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
@@ -632,6 +646,23 @@ end)
 
 cmdBtn.MouseButton1Click:Connect(function()
     toggleCommandBar()
+end)
+
+-- MOBILE FLY MOVEMENT BUTTON HANDLERS - These control the mobileKeysPressed table
+flyUpBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.Space = true
+end)
+
+flyUpBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.Space = false
+end)
+
+flyDownBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.Ctrl = true
+end)
+
+flyDownBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.Ctrl = false
 end)
 
 mobileGui.Parent = player:WaitForChild("PlayerGui")
@@ -921,6 +952,8 @@ print("Z = Godmode")
 print("X = Noclip")
 print("/ = Command Bar")
 print("")
+print("MOBILE FLY CONTROLS: Use ▲ ▼ buttons to fly up/down!")
+print("")
 print("Commands:")
 print("  speed <number> - Change fly speed")
 print("  view <player> - View another player's camera")
@@ -928,4 +961,4 @@ print("  stop - Stop viewing")
 print("  reset - Reset instantly")
 print("")
 print("!rejoin = Rejoin server")
-print("==========================================")
+print("==========================================" )
