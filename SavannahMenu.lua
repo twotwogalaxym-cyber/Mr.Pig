@@ -23,7 +23,6 @@ local PlayerDamageSelf = RS:WaitForChild("PlayerDamageSelfRemoteEvent")
 local aura = false
 local fly = false
 local esp = false
-local godmode = false
 local noclip = false
 local flySpeed = 60
 local viewingPlayer = nil
@@ -113,7 +112,7 @@ controlsLabel.Parent = bgFrame
 controlsLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
 controlsLabel.Position = UDim2.new(0.1, 0, 0.65, 0)
 controlsLabel.BackgroundTransparency = 1
-controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | Z = God | X = Noclip | / = Commands"
+controlsLabel.Text = "T = Aura | Y = Fly | U = ESP | X = Noclip | / = Commands"
 controlsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
 controlsLabel.TextSize = 24
 controlsLabel.Font = Enum.Font.Gotham
@@ -336,32 +335,6 @@ player.CharacterAdded:Connect(function(char)
         startNoclip()
     end
 end)
-
--- ==========================================
--- GODMODE FUNCTIONS
--- ==========================================
-local godmodeLoop = nil
-
-local function toggleGodmode()
-    godmode = not godmode
-    
-    if godmode then
-        godmodeLoop = RunService.Heartbeat:Connect(function()
-            pcall(function()
-                PlayerDamageSelf:FireServer(0/0)
-            end)
-        end)
-        sendNotification("Godmode", "ON", 3)
-        print("Godmode ON")
-    else
-        if godmodeLoop then
-            godmodeLoop:Disconnect()
-            godmodeLoop = nil
-        end
-        sendNotification("Godmode", "OFF", 3)
-        print("Godmode OFF")
-    end
-end
 
 -- ==========================================
 -- VIEW PLAYER FUNCTION
@@ -601,20 +574,24 @@ end
 local auraBtn = createButton("Aura", UDim2.new(0.5, -25, 0, 32))
 local flyBtn = createButton("Fly", UDim2.new(0.5, -25, 0, 77))
 local espBtn = createButton("ESP", UDim2.new(0.5, -25, 0, 122))
-local godBtn = createButton("God", UDim2.new(0.5, -25, 0, 167))
 local noclipBtn = createButton("Clip", UDim2.new(0.5, -25, 0, 212))
 local cmdBtn = createButton("Cmd", UDim2.new(0.5, -25, 0, 257))
 
--- MOBILE FLY MOVEMENT BUTTONS
-local flyUpBtn = createButton("▲", UDim2.new(0.5, -25, 0, 302))
-local flyDownBtn = createButton("▼", UDim2.new(0.5, -25, 0, 347))
+-- MOBILE FLY MOVEMENT BUTTONS (D-Pad style)
+-- Arrow keys: ▲▼◄► for movement
+-- W/A/S/D equivalents
+local flyUpBtn = createButton("▲", UDim2.new(0.5, -25, 0, 302))      -- W (forward)
+local flyDownBtn = createButton("▼", UDim2.new(0.5, -25, 0, 347))    -- S (backward)
+local flyLeftBtn = createButton("◄", UDim2.new(0, 5, 0, 325))        -- A (left)
+local flyRightBtn = createButton("►", UDim2.new(1, -55, 0, 325))     -- D (right)
+local flyUpAltBtn = createButton("↑", UDim2.new(0, 65, 0, 302))      -- Space (ascend)
+local flyDownAltBtn = createButton("↓", UDim2.new(0, 65, 0, 347))    -- Ctrl (descend)
 
 -- Function to update button colors
 local function updateButtonColors()
     auraBtn.BackgroundColor3 = aura and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
     flyBtn.BackgroundColor3 = fly and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
     espBtn.BackgroundColor3 = esp and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
-    godBtn.BackgroundColor3 = godmode and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
     noclipBtn.BackgroundColor3 = noclip and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 60, 60)
 end
 
@@ -631,11 +608,6 @@ end)
 
 espBtn.MouseButton1Click:Connect(function()
     esp = not esp
-    updateButtonColors()
-end)
-
-godBtn.MouseButton1Click:Connect(function()
-    toggleGodmode()
     updateButtonColors()
 end)
 
@@ -662,6 +634,54 @@ flyDownBtn.MouseButton1Down:Connect(function()
 end)
 
 flyDownBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.Ctrl = false
+end)
+
+flyUpBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.W = true
+end)
+
+flyUpBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.W = false
+end)
+
+flyDownBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.S = true
+end)
+
+flyDownBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.S = false
+end)
+
+flyLeftBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.A = true
+end)
+
+flyLeftBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.A = false
+end)
+
+flyRightBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.D = true
+end)
+
+flyRightBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.D = false
+end)
+
+flyUpAltBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.Space = true
+end)
+
+flyUpAltBtn.MouseButton1Up:Connect(function()
+    mobileKeysPressed.Space = false
+end)
+
+flyDownAltBtn.MouseButton1Down:Connect(function()
+    mobileKeysPressed.Ctrl = true
+end)
+
+flyDownAltBtn.MouseButton1Up:Connect(function()
     mobileKeysPressed.Ctrl = false
 end)
 
@@ -755,11 +775,6 @@ UIS.InputBegan:Connect(function(k, gp)
         esp = not esp
         local msg = esp and "ESP ON" or "ESP OFF"
         sendNotification("ESP", msg, 3)
-        updateKeybindDisplay()
-    end
-    
-    if k.KeyCode == Enum.KeyCode.Z then
-        toggleGodmode()
         updateKeybindDisplay()
     end
     
@@ -948,7 +963,6 @@ print("")
 print("T = Kill Aura")
 print("Y = Fly (WASD + Space/Ctrl)")
 print("U = ESP")
-print("Z = Godmode")
 print("X = Noclip")
 print("/ = Command Bar")
 print("")
