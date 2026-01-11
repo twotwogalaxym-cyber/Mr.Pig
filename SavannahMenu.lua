@@ -1774,62 +1774,90 @@ end)
 
 -- ESP
 local function createESP(character)
-    if not character then return end
-    local root = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not root or not humanoid then return end
-    
-    local oldESP = root:FindFirstChild("PlayerESP")
-    if oldESP then oldESP:Destroy() end
-    
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "PlayerESP"
-    billboard.Parent = root
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0, 100, 0, 40)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Parent = billboard
-    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.TextColor3 = Color3.new(1, 1, 1)
-    nameLabel.TextSize = 14
-    nameLabel.Font = Enum.Font.SourceSansBold
-    nameLabel.Text = character.Name
-    nameLabel.TextStrokeTransparency = 0.5
-    
-    local healthLabel = Instance.new("TextLabel")
-    healthLabel.Parent = billboard
-    healthLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    healthLabel.Position = UDim2.new(0, 0, 0.5, 0)
-    healthLabel.BackgroundTransparency = 1
-    healthLabel.TextColor3 = Color3.new(0, 1, 0)
-    healthLabel.TextSize = 12
-    healthLabel.Font = Enum.Font.SourceSans
-    healthLabel.TextStrokeTransparency = 0.5
-    
-    local connection
-    connection = RunService.Heartbeat:Connect(function()
-        if not esp or not character or not character.Parent or not humanoid or not humanoid.Parent then
-            if billboard then billboard:Destroy() end
-            if connection then connection:Disconnect() end
-            return
-        end
-        
-        local health = math.floor(humanoid.Health)
-        local maxHealth = math.floor(humanoid.MaxHealth)
-        healthLabel.Text = health .. "/" .. maxHealth .. " HP"
-        
-        local pct = health / maxHealth
-        if pct > 0.5 then
-            healthLabel.TextColor3 = Color3.new(0, 1, 0)
-        elseif pct > 0.25 then
-            healthLabel.TextColor3 = Color3.new(1, 1, 0)
-        else
-            healthLabel.TextColor3 = Color3.new(1, 0, 0)
-        end
-    end)
+	if not character then return end
+	local root = character:FindFirstChild("HumanoidRootPart")
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not root or not humanoid then return end
+
+	local oldESP = root:FindFirstChild("PlayerESP")
+	if oldESP then oldESP:Destroy() end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "PlayerESP"
+	billboard.Parent = root
+	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.new(0, 100, 0, 40)
+	billboard.StudsOffset = Vector3.new(0, 3, 0)
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Parent = billboard
+	nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.TextColor3 = Color3.new(1, 1, 1)
+	nameLabel.TextSize = 14
+	nameLabel.Font = Enum.Font.SourceSansBold
+	nameLabel.Text = character.Name
+	nameLabel.TextStrokeTransparency = 0.5
+
+	local healthLabel = Instance.new("TextLabel")
+	healthLabel.Parent = billboard
+	healthLabel.Size = UDim2.new(1, 0, 0.5, 0)
+	healthLabel.Position = UDim2.new(0, 0, 0.5, 0)
+	healthLabel.BackgroundTransparency = 1
+	healthLabel.TextColor3 = Color3.new(0, 1, 0)
+	healthLabel.TextSize = 12
+	healthLabel.Font = Enum.Font.SourceSans
+	healthLabel.TextStrokeTransparency = 0.5
+
+	local nanIndex = 1
+	local lastSwitch = 0
+	local colors = {
+		Color3.fromRGB(255, 165, 0),   -- Orange
+		Color3.fromRGB(255, 69, 0),    -- Red Orange
+		Color3.fromRGB(255, 255, 0),   -- Yellow
+		Color3.fromRGB(0, 128, 0),     -- Green
+		Color3.fromRGB(0, 0, 255),     -- Blue
+		Color3.fromRGB(75, 0, 130),    -- Indigo
+		Color3.fromRGB(238, 130, 238)  -- Purple
+	}
+
+	local connection
+	connection = RunService.Heartbeat:Connect(function()
+		if not esp or not character or not character.Parent or not humanoid or not humanoid.Parent then
+			if billboard then billboard:Destroy() end
+			if connection then connection:Disconnect() end
+			return
+		end
+
+		local health = math.floor(humanoid.Health)
+		local maxHealth = math.floor(humanoid.MaxHealth)
+
+		-- Check if health is NaN (godmode detection)
+		if health ~= health then
+			healthLabel.Text = "Godmode"
+
+			local currentTime = tick()
+			if currentTime - lastSwitch >= 0.20 then
+				lastSwitch = currentTime
+				nanIndex = nanIndex + 1
+				if nanIndex > #colors then
+					nanIndex = 1
+				end
+			end
+			healthLabel.TextColor3 = colors[nanIndex]
+		else
+			healthLabel.Text = health .. "/" .. maxHealth .. " HP"
+			local pct = health / maxHealth
+
+			if pct > 0.5 then
+				healthLabel.TextColor3 = Color3.new(0, 1, 0)
+			elseif pct > 0.25 then
+				healthLabel.TextColor3 = Color3.new(1, 1, 0)
+			else
+				healthLabel.TextColor3 = Color3.new(1, 0, 0)
+			end
+		end
+	end)
 end
 
 local function updateESP()
