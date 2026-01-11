@@ -1,5 +1,6 @@
 -- Savannah Life: Godmode + Kill Aura + Fly (FIXED COMMAND BOX – DEC 2025)
 -- FIX: Removed 'local' from outputFrame and commandGui creation
+-- Added Daytime Command
 -- Press Z → Godmode
 -- Press T → Kill Aura (40 studs, safe delays, no kicks, targets closest)
 -- Press Y → Fly (UNIVERSAL - works on all executors)
@@ -10,6 +11,7 @@
 -- Press M → Toggle Command Box
 -- Press ; → Open Command Box and start typing
 -- Chat: ;goto playername → Teleport to player
+-- Chat: ;day → Toggle Daytime (always noon)
 
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -50,6 +52,9 @@ local noclipConnection = nil
 local originalCollisions = {}
 local looptpConnection = nil
 local killModeConnection = nil
+local daytimeActive = false
+local daytimeConnection = nil
+local Lighting = game:GetService("Lighting")
 
 -- SAFE NOTIFICATION FUNCTION
 local function sendNotification(title, text, duration)
@@ -228,6 +233,31 @@ Players.PlayerRemoving:Connect(function(p)
         unviewPlayer()
     end
 end)
+
+-- DAYTIME TOGGLE FUNCTION
+local function toggleDaytime()
+    daytimeActive = not daytimeActive
+    
+    if daytimeActive then
+        -- Start the daytime spam
+        if daytimeConnection then daytimeConnection:Disconnect() end
+        daytimeConnection = RunService.Heartbeat:Connect(function()
+            if daytimeActive then
+                Lighting.ClockTime = 12
+            end
+        end)
+        sendNotification("Daytime", "ON - Always noon", 3)
+        addOutput("Daytime enabled!", Color3.fromRGB(100, 255, 100))
+    else
+        -- Stop the daytime spam
+        if daytimeConnection then
+            daytimeConnection:Disconnect()
+            daytimeConnection = nil
+        end
+        sendNotification("Daytime", "OFF", 3)
+        addOutput("Daytime disabled!", Color3.fromRGB(100, 255, 100))
+    end
+end
 
 -- NOCLIP FUNCTIONS
 local function startNoclip()
@@ -771,7 +801,7 @@ end)
 outputCount = 0
 
 local allCommands = {
-    "god", "aura", "fly", "esp", "circle", "noclip", "give",
+    "god", "aura", "fly", "esp", "circle", "day", "noclip", "give",
     "reset", "loopgoto", "stoploopgoto", "kill", "stopkill", "skill", "stopskill", "sgoto", "stopsgoto",
     "whitelist", "unwhitelist",
     "speed", "radius", "view", "unview", "players",
@@ -1043,6 +1073,13 @@ local function processCommand(cmd)
         local status = circleMode and "ON" or "OFF"
         addOutput("Circle Mode: " .. status, circleMode and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100))
         sendNotification("Circle Mode", status, 3)
+        return
+    end
+    
+    if cmd == "day" or cmd == "daytime" then
+        toggleDaytime()
+        local status = daytimeActive and "ON (Always Noon)" or "OFF"
+        addOutput("Daytime: " .. status, daytimeActive and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100))
         return
     end
     
@@ -1689,6 +1726,10 @@ player.Chatted:Connect(function(message)
                 sendNotification("Failed", "Player not found!", 3)
             end
         end
+    end
+    
+    if message:lower() == ";day" then
+        toggleDaytime()
     end
 end)
 
