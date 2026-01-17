@@ -1,165 +1,6 @@
-Cross ✝
-c…
-Invisible
-
-b… Mr.Pig — 10/12/2025 14:34
-i have a sound one
-and im working on one that lags the game completely
-c… Codex — 10/12/2025 14:55
-W
-d… Mr.Zebra — 10/12/2025 15:37
-Grindy
-But
-Fun
-And can be cheesed using scripts
-.… ᲼ — 14/12/2025 00:37
-@Cross ✝
-complete?
-c… Cross ✝
-
- — 14/12/2025 00:49
-nah not yet
-d… Mr.Zebra — 14/12/2025 21:01
-@Codex where have you been bro 😭
-c… Cross ✝
-
- — 06/01/2026 10:46
-@Mr.Worm u use ai to descramble my script?
-m… Mr.Worm
-
- — 06/01/2026 23:00
-Oh, it wasnt real
-m… Mr.Worm
-
- — 06/01/2026 23:15
-Well
-Pelase don't hate me:((
-m… Mr.Worm
-
- — 09/01/2026 23:06
-I used your startup thing D:
--- __________________________________________
--- |                                         |
--- |                                         |
--- |   Mr. Worm's Key System Extracter! >:D  |
--- |                                         |
--- |                                         |
-Expand
-message.txt
-6 KB
-*Hugs
-.… ᲼ — 10/01/2026 18:45
-did you make that script yourself?
-it’s very poor
-m… Mr.Worm
-
- — 10/01/2026 18:48
-I hope you realize it's a copy and paste of Mr.Pig's
-m… Mr.Worm
-
- — 10/01/2026 18:48
-no
-.… ᲼ — 10/01/2026 18:48
-his script is terrible
-m… Mr.Worm
-
- — 11/01/2026 07:28
--- __________________________________________
--- |                                         |
--- |                                         |
--- |   Mr. Worm's Day-Time Script! >:D       |
--- |                                         |
--- |                                         |
-Expand
-message.txt
-5 KB
-this script will set your end to daytime
-better than that darn night vision
-Could sneak it on your main 👀
-Won't effect other players just you
-c… Cross ✝
-
- — 11/01/2026 10:18
-Oo nice nice
-I can put it in
-When im done shitting
-m… Mr.Worm
-
- — 11/01/2026 19:30
-@Cross ✝ @Mr.Pig  Updated ESP, if they have godmode, it will make it rainbow and it will say godmode 
-m… Mr.Worm
-
- — 11/01/2026 19:39
-local function createESP(character)
-	if not character then return end
-	local root = character:FindFirstChild("HumanoidRootPart")
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not root or not humanoid then return end
-Expand
-message.txt
-4 KB
-Now I really hope giving godmode doesn't get patched
-m… Mr.Worm
-
- — 12/01/2026 22:00
--_-
-g… Nur
-
- — 13/01/2026 00:08
-Its gone twin D:
-m… Mr.Worm
-
- — 13/01/2026 02:15
-🙁
-c… Cross ✝
-
- — Yesterday at 21:48
 -- Savannah Life: Godmode + Kill Aura + Fly (FIXED COMMAND BOX – DEC 2025)
 -- FIX: Removed 'local' from outputFrame and commandGui creation
--- Added Daytime Command
--- Press Z → Godmode
--- Press T → Kill Aura (40 studs, safe delays, no kicks, targets closest)
--- Press Y → Fly (UNIVERSAL - works on all executors)... (24 KB left)
-Expand
-Savannah ultimate script.txt
-74 KB
-@Mr.Worm
-@The Real Cam
-c… The Real Cam
-
- — Yesterday at 21:50
-Ok
-c… The Real Cam
-
- — Yesterday at 22:06
-I’m planning on making the Cmd “Ele” makes it play the Ele sounds once.  Cmd Aura {Speed} change the speed of the kill aura. Fast speeds usually make you disconnect in laggy servers haha
-c… The Real Cam
-
- — Yesterday at 23:03
->:D 
-the aura kill speed is 0.1 but you can change it now
-@Cross ✝
--- Savannah Life: Godmode + Kill Aura + Fly (FIXED COMMAND BOX – DEC 2025)
--- FIX: Removed 'local' from outputFrame and commandGui creation
--- Added Daytime Command
--- Press Z → Godmode
--- Press T → Kill Aura (40 studs, safe delays, no kicks, targets closest)
--- Press Y → Fly (UNIVERSAL - works on all executors)... (26 KB left)
-Expand
-message.txt
-76 KB
-c… Cross ✝
-
- — Yesterday at 23:17
-Ye, it was the speed
-Im still on call with a girl
-Watchinf somethibg
-Watching the walking dead
-So i cant test everything
-﻿
--- Savannah Life: Godmode + Kill Aura + Fly (FIXED COMMAND BOX – DEC 2025)
--- FIX: Removed 'local' from outputFrame and commandGui creation
--- Added Daytime Command
+-- Added Daytime Command + Aura Speed Control
 -- Press Z → Godmode
 -- Press T → Kill Aura (40 studs, safe delays, no kicks, targets closest)
 -- Press Y → Fly (UNIVERSAL - works on all executors)
@@ -171,7 +12,7 @@ So i cant test everything
 -- Press ; → Open Command Box and start typing
 -- Chat: ;goto playername → Teleport to player
 -- Chat: ;day → Toggle Daytime (always noon)
--- Added a cmd that changes the silly aura kill speed >:D
+-- Cmd: aura [speed] → Set kill aura speed (0.01-5)
 
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
@@ -186,6 +27,18 @@ local DamageSelf = RS:WaitForChild("PlayerDamageSelfRemoteEvent")
 local RespawnFunc = RS:WaitForChild("SpawnAsCharacterRemoteFunction")
 local BasicAttack = RS:WaitForChild("AttackHandlerRemoteEvent")
 local SpecialAttack = RS:WaitForChild("SpecialAttackRemoteEvent_RegularAttack")
+
+-- NOTE: Godmode remotes available:
+-- - PlayerDamageSelfRemoteEvent (fires with 0/0 for NaN health)
+-- - SpecialAttackRemoteEvent_ChargedAttack (alternative godmode - fires with 0/0)
+-- - AttackHandlerRemoteEvent (basic attacks)
+-- - SpecialAttackRemoteEvent_RegularAttack (regular special attacks)
+-- 
+-- If basic godmode is patched, try:
+-- 1. SpecialAttackRemoteEvent_Dash or other special attack variants
+-- 2. Blocking damage by modifying humanoid properties
+-- 3. Using CharacterAdded to reapply godmode instantly
+-- 4. Combining multiple NaN fires simultaneously
 
 local godmode = false
 local aura = false
@@ -215,9 +68,7 @@ local killModeConnection = nil
 local daytimeActive = false
 local daytimeConnection = nil
 local Lighting = game:GetService("Lighting")
-
--- ADDED: Kill Aura speed variable
-local auraSpeed = 0.1  -- Default aura speed
+local auraSpeed = 0.1  -- Default aura speed for kill aura
 
 -- SAFE NOTIFICATION FUNCTION
 local function sendNotification(title, text, duration)
@@ -1054,22 +905,6 @@ local function processCommand(cmd)
     
     addOutput("CMD: " .. cmd, Color3.fromRGB(150, 150, 150))
     
-    -- ADDED: Aura speed command
-    local auraSpeedMatch = cmd:match("^aura%s+(%d+%.?%d*)$")
-    if auraSpeedMatch then
-        local newSpeed = tonumber(auraSpeedMatch)
-        if newSpeed and newSpeed >= 0.01 and newSpeed <= 5 then
-            auraSpeed = newSpeed
-            addOutput("Aura speed set to: " .. auraSpeed, Color3.fromRGB(100, 255, 100))
-            if aura then
-                sendNotification("Aura Speed", "Set to " .. auraSpeed, 3)
-            end
-        else
-            addOutput("Aura speed must be between 0.01 and 5", Color3.fromRGB(255, 100, 100))
-        end
-        return
-    end
-    
     local loopgotoMatch = cmd:match("^loopgoto%s+(.+)$")
     if loopgotoMatch then
         local targetPlayer = findPlayer(loopgotoMatch)
@@ -1213,6 +1048,22 @@ local function processCommand(cmd)
         addOutput("Sgoto: Stopped - Teleporting", Color3.fromRGB(255, 100, 100))
         sendNotification("Sgoto", "Stopped - Teleporting", 2)
         spawn(function() teleportToLocation(Vector3.new(-6405, 3, 4551)) end)
+        return
+    end
+    
+    -- AURA SPEED COMMAND
+    local auraSpeedMatch = cmd:match("^aura%s+(%d+%.?%d*)$")
+    if auraSpeedMatch then
+        local newSpeed = tonumber(auraSpeedMatch)
+        if newSpeed and newSpeed >= 0.01 and newSpeed <= 5 then
+            auraSpeed = newSpeed
+            addOutput("Aura speed set to: " .. auraSpeed, Color3.fromRGB(100, 255, 100))
+            if aura then
+                sendNotification("Aura Speed", "Set to " .. auraSpeed, 3)
+            end
+        else
+            addOutput("Aura speed must be between 0.01 and 5", Color3.fromRGB(255, 100, 100))
+        end
         return
     end
     
@@ -1482,13 +1333,13 @@ local function processCommand(cmd)
     
     if cmd == "help" or cmd == "?" or cmd == "commands" then
         addOutput("=== TOGGLE COMMANDS ===", Color3.fromRGB(255, 105, 180))
-        addOutput("god, aura [speed], fly, esp, circle, noclip, give", Color3.fromRGB(200, 200, 200))
+        addOutput("god, aura, fly, esp, circle, noclip, give", Color3.fromRGB(200, 200, 200))
         addOutput("=== ACTION COMMANDS ===", Color3.fromRGB(255, 105, 180))
         addOutput("reset, loopgoto [name], stoploopgoto", Color3.fromRGB(200, 200, 200))
         addOutput("kill [name], stopkill, skill [name], stopskill", Color3.fromRGB(200, 200, 200))
         addOutput("sgoto [name], stopsgoto", Color3.fromRGB(200, 200, 200))
         addOutput("=== OTHER ===", Color3.fromRGB(255, 105, 180))
-        addOutput("speed [1-500], radius [5-100], aura [0.01-5]", Color3.fromRGB(200, 200, 200))
+        addOutput("speed [1-500], radius [5-100]", Color3.fromRGB(200, 200, 200))
         addOutput("view [name], unview, players", Color3.fromRGB(200, 200, 200))
         addOutput("goto [name], whitelist [name]", Color3.fromRGB(200, 200, 200))
         addOutput("unwhitelist [name], rejoin, fix", Color3.fromRGB(200, 200, 200))
@@ -1582,6 +1433,703 @@ commandInput.Changed:Connect(function(property)
             local matchedCommands = {}
             for _, cmd in ipairs(allCommands) do
                 if cmd:match("^" .. inputText) then
-                    table.insert(match... (26 KB left)
-message.txt
-76 KB
+                    table.insert(matchedCommands, cmd)
+                end
+            end
+            
+            if #matchedCommands > 0 then
+                local header = Instance.new("TextLabel")
+                header.Parent = outputFrame
+                header.Size = UDim2.new(1, -16, 0, 25)
+                header.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+                header.BackgroundTransparency = 0.2
+                header.Text = "=== MATCHING ==="
+                header.TextColor3 = Color3.fromRGB(255, 255, 255)
+                header.TextSize = 13
+                header.Font = Enum.Font.GothamBold
+                header.TextXAlignment = Enum.TextXAlignment.Center
+                header.LayoutOrder = 0
+                header.BorderSizePixel = 0
+                
+                for i, cmd in ipairs(matchedCommands) do
+                    local label = Instance.new("TextLabel")
+                    label.Parent = outputFrame
+                    label.Size = UDim2.new(1, -16, 0, 20)
+                    label.BackgroundTransparency = 0.5
+                    label.Text = "  " .. cmd
+                    label.TextColor3 = Color3.fromRGB(100, 255, 150)
+                    label.TextSize = 12
+                    label.Font = Enum.Font.Code
+                    label.TextXAlignment = Enum.TextXAlignment.Left
+                    label.LayoutOrder = i
+                end
+            else
+                local noMatch = Instance.new("TextLabel")
+                noMatch.Parent = outputFrame
+                noMatch.Size = UDim2.new(1, -16, 0, 25)
+                noMatch.BackgroundTransparency = 0.5
+                noMatch.Text = "No commands match: " .. inputText
+                noMatch.TextColor3 = Color3.fromRGB(255, 100, 100)
+                noMatch.TextSize = 12
+                noMatch.Font = Enum.Font.Code
+                noMatch.TextXAlignment = Enum.TextXAlignment.Center
+            end
+        end
+    end
+end)
+
+-- STARTUP
+sendNotification("Mr.Pig says hello", "Press ; for Command Box!", 5)
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MrPigStartup"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+
+local bgFrame = Instance.new("Frame")
+bgFrame.Parent = screenGui
+bgFrame.Size = UDim2.new(1, 0, 1, 0)
+bgFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+bgFrame.BackgroundTransparency = 0.2
+bgFrame.BorderSizePixel = 0
+bgFrame.ZIndex = 10
+
+local titleLabelStartup = Instance.new("TextLabel")
+titleLabelStartup.Parent = bgFrame
+titleLabelStartup.Size = UDim2.new(0.8, 0, 0.2, 0)
+titleLabelStartup.Position = UDim2.new(0.1, 0, 0.3, 0)
+titleLabelStartup.BackgroundTransparency = 1
+titleLabelStartup.Text = "🐷 MR. PIG SAYS HELLO 🐷"
+titleLabelStartup.TextColor3 = Color3.fromRGB(255, 105, 180)
+titleLabelStartup.TextSize = 60
+titleLabelStartup.Font = Enum.Font.FredokaOne
+titleLabelStartup.TextStrokeTransparency = 0.5
+titleLabelStartup.ZIndex = 11
+
+local subtitleLabel = Instance.new("TextLabel")
+subtitleLabel.Parent = bgFrame
+subtitleLabel.Size = UDim2.new(0.8, 0, 0.1, 0)
+subtitleLabel.Position = UDim2.new(0.1, 0, 0.5, 0)
+subtitleLabel.BackgroundTransparency = 1
+subtitleLabel.Text = "Press ; for Command Box!"
+subtitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+subtitleLabel.TextSize = 36
+subtitleLabel.Font = Enum.Font.GothamBold
+subtitleLabel.TextStrokeTransparency = 0.5
+subtitleLabel.ZIndex = 11
+
+local controlsLabel = Instance.new("TextLabel")
+controlsLabel.Parent = bgFrame
+controlsLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
+controlsLabel.Position = UDim2.new(0.1, 0, 0.65, 0)
+controlsLabel.BackgroundTransparency = 1
+controlsLabel.Text = "Z = God | T = Aura | Y = Fly | U = ESP"
+controlsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+controlsLabel.TextSize = 24
+controlsLabel.Font = Enum.Font.Gotham
+controlsLabel.TextStrokeTransparency = 0.5
+controlsLabel.ZIndex = 11
+
+screenGui.Parent = player:WaitForChild("PlayerGui")
+task.delay(5, function() if screenGui then screenGui:Destroy() end end)
+
+-- KEYBIND DISPLAY
+local keybindGui = Instance.new("ScreenGui")
+keybindGui.Name = "KeybindDisplay"
+keybindGui.ResetOnSpawn = false
+
+local keybindFrame = Instance.new("Frame")
+keybindFrame.Parent = keybindGui
+keybindFrame.Size = UDim2.new(0, 850, 0, 80)
+keybindFrame.Position = UDim2.new(0.5, -425, 1, -90)
+keybindFrame.BackgroundTransparency = 1
+
+local keybindText = Instance.new("TextLabel")
+keybindText.Parent = keybindFrame
+keybindText.Size = UDim2.new(1, 0, 1, 0)
+keybindText.BackgroundTransparency = 1
+keybindText.TextColor3 = Color3.fromRGB(255, 255, 255)
+keybindText.TextSize = 16
+keybindText.Font = Enum.Font.GothamBold
+keybindText.TextStrokeTransparency = 0.5
+keybindText.Text = "Loading..."
+
+keybindGui.Parent = player:WaitForChild("PlayerGui")
+
+local pigLabel = Instance.new("TextLabel")
+pigLabel.Parent = keybindGui
+pigLabel.Size = UDim2.new(0, 150, 0, 40)
+pigLabel.Position = UDim2.new(1, -160, 0, 10)
+pigLabel.BackgroundTransparency = 1
+pigLabel.Text = "Mr.Pig 🐷"
+pigLabel.TextColor3 = Color3.fromRGB(255, 105, 180)
+pigLabel.TextSize = 24
+pigLabel.Font = Enum.Font.FredokaOne
+pigLabel.TextStrokeTransparency = 0.5
+
+local chatHint = Instance.new("TextLabel")
+chatHint.Parent = keybindGui
+chatHint.Size = UDim2.new(0, 200, 0, 25)
+chatHint.Position = UDim2.new(1, -210, 0, 50)
+chatHint.BackgroundTransparency = 1
+chatHint.Text = "; = Command Box"
+chatHint.TextColor3 = Color3.fromRGB(150, 255, 150)
+chatHint.TextSize = 14
+chatHint.Font = Enum.Font.Gotham
+chatHint.TextStrokeTransparency = 0.5
+
+function updateKeybindDisplay()
+    keybindText.Text = string.format(
+        "Z-God %s | T-Aura %s | Y-Fly %s | U-ESP %s | P-Circle %s | Speed:%d",
+        godmode and "[ON]" or "[OFF]",
+        aura and "[ON]" or "[OFF]",
+        fly and "[ON]" or "[OFF]",
+        esp and "[ON]" or "[OFF]",
+        circleMode and "[ON]" or "[OFF]",
+        flySpeed
+    )
+end
+
+spawn(function()
+    while task.wait(0.5) do
+        updateKeybindDisplay()
+    end
+end)
+
+-- GODMODE LOOP  
+spawn(function()
+    while task.wait(0.05) do
+        if godmode and player.Character then
+            local char = player.Character
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Parent then
+                pcall(function()
+                    -- Primary goal: Get and maintain NaN health
+                    -- NaN can't be compared so damage won't register as death
+                    
+                    humanoid.Health = 0/0  -- Set health to NaN
+                    humanoid.MaxHealth = 0/0  -- Set MaxHealth to NaN
+                    
+                    task.wait(0.02)
+                    
+                    -- If somehow health got reset, reapply NaN
+                    if humanoid.Health == humanoid.Health then  -- If NOT NaN (NaN != NaN)
+                        humanoid.Health = 0/0
+                        humanoid.MaxHealth = 0/0
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- INFINITE STAMINA
+RunService.Heartbeat:Connect(function()
+    if player.Character then
+        pcall(function()
+            player.Character:SetAttribute("Stamina", 100)
+        end)
+    end
+end)
+
+-- CIRCLE MODE
+spawn(function()
+    while task.wait() do
+        if circleMode and player.Character then
+            local root = player.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local closestPlayer = nil
+                local closestDistance = math.huge
+                
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v ~= player and v.Character then
+                        local hrp = v.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local distance = (root.Position - hrp.Position).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestPlayer = v
+                            end
+                        end
+                    end
+                end
+                
+                if closestPlayer and closestPlayer.Character then
+                    local targetRoot = closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if targetRoot then
+                        circleAngle = circleAngle + 0.1
+                        local x = targetRoot.Position.X + math.cos(circleAngle) * circleRadius
+                        local z = targetRoot.Position.Z + math.sin(circleAngle) * circleRadius
+                        local y = targetRoot.Position.Y
+                        root.CFrame = CFrame.new(Vector3.new(x, y, z), targetRoot.Position)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- KEYBINDS
+UIS.InputBegan:Connect(function(k, gp)
+    if gp then return end
+    
+    if k.KeyCode == Enum.KeyCode.Semicolon then
+        if not UIS:GetFocusedTextBox() then
+            openCommandBoxAndFocus()
+            return
+        end
+    end
+    
+    if UIS:GetFocusedTextBox() then return end
+    
+    if k.KeyCode == Enum.KeyCode.Z then
+        godmode = not godmode
+        sendNotification("Godmode", godmode and "ON" or "OFF", 3)
+        updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.T then
+        aura = not aura
+        sendNotification("Kill Aura", aura and "ON" or "OFF", 3)
+        updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.Y then
+        toggleFly()
+        updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.U then
+        esp = not esp
+        sendNotification("ESP", esp and "ON" or "OFF", 3)
+        updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.P then
+        circleMode = not circleMode
+        sendNotification("Circle Mode", circleMode and "ON" or "OFF", 3)
+        updateKeybindDisplay()
+    end
+    
+    if k.KeyCode == Enum.KeyCode.O then
+        if player.Character then
+            local root = player.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local closestPlayer = nil
+                local closestDistance = 50
+                
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v ~= player and v.Character then
+                        local hum = v.Character:FindFirstChildOfClass("Humanoid")
+                        local hrp = v.Character:FindFirstChild("HumanoidRootPart")
+                        if hum and hrp then
+                            local distance = (root.Position - hrp.Position).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestPlayer = {humanoid = hum, player = v}
+                            end
+                        end
+                    end
+                end
+                
+                if closestPlayer then
+                    pcall(function()
+                        RS:WaitForChild("SpecialAttackRemoteEvent_ChargedAttack"):FireServer(closestPlayer.humanoid, 0/0)
+                    end)
+                    sendNotification("Godmode Given", closestPlayer.player.Name, 3)
+                else
+                    sendNotification("Failed", "No players nearby!", 3)
+                end
+            end
+        end
+    end
+    
+    if k.KeyCode == Enum.KeyCode.L then
+        sendNotification("Teleporting", "Teleporting...", 3)
+        spawn(function() teleportToLocation(Vector3.new(-6405, 3, 4551)) end)
+    end
+end)
+
+-- CHAT COMMANDS
+player.Chatted:Connect(function(message)
+    if message:lower() == "!rejoin" then
+        sendNotification("Rejoining", "Rejoining server...", 3)
+        task.wait(0.5)
+        local TeleportService = game:GetService("TeleportService")
+        pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end)
+        pcall(function() TeleportService:Teleport(game.PlaceId, player) end)
+    end
+    
+    if message:lower() == ";play" then
+        StartSoundSpam()
+    end
+    
+    if message:lower():sub(1, 6) == ";goto " then
+        local targetName = message:sub(7)
+        if targetName ~= "" then
+            local targetPlayer = findPlayer(targetName)
+            if targetPlayer then
+                spawn(function() ragdollTeleportToPlayer(targetPlayer) end)
+            else
+                sendNotification("Failed", "Player not found!", 3)
+            end
+        end
+    end
+    
+    if message:lower() == ";day" then
+        toggleDaytime()
+    end
+end)
+
+-- KILL AURA
+spawn(function()
+    while task.wait(auraSpeed) do
+        if not aura or not player.Character then continue end
+        local root = player.Character:FindFirstChild("HumanoidRootPart")
+        if not root then continue end
+        
+        local closestPlayer = nil
+        local closestDistance = 40
+        
+        if killMode and killModeTarget and killModeTarget.Character then
+            local targetHum = killModeTarget.Character:FindFirstChildOfClass("Humanoid")
+            if targetHum and targetHum.Health > 0 then
+                closestPlayer = {humanoid = targetHum}
+            end
+        else
+            for _, v in pairs(Players:GetPlayers()) do
+                if v == player then continue end
+                if isWhitelisted(v.Name) then continue end
+                
+                local hum = v.Character and v.Character:FindFirstChildOfClass("Humanoid")
+                local hrp = v.Character and v.Character:FindFirstChild("HumanoidRootPart")
+                if hum and hrp and hum.Health > 0 then
+                    local distance = (root.Position - hrp.Position).Magnitude
+                    if distance < closestDistance then
+                        closestDistance = distance
+                        closestPlayer = {humanoid = hum}
+                    end
+                end
+            end
+        end
+        
+        if closestPlayer then
+            pcall(function() BasicAttack:FireServer(closestPlayer.humanoid) end)
+            pcall(function() SpecialAttack:FireServer(closestPlayer.humanoid) end)
+        end
+    end
+end)
+
+-- ESP
+local function createESP(character)
+	if not character then return end
+	local root = character:FindFirstChild("HumanoidRootPart")
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not root or not humanoid then return end
+
+	local oldESP = root:FindFirstChild("PlayerESP")
+	if oldESP then oldESP:Destroy() end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "PlayerESP"
+	billboard.Parent = root
+	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.new(0, 100, 0, 40)
+	billboard.StudsOffset = Vector3.new(0, 3, 0)
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Parent = billboard
+	nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.TextColor3 = Color3.new(1, 1, 1)
+	nameLabel.TextSize = 14
+	nameLabel.Font = Enum.Font.SourceSansBold
+	nameLabel.Text = character.Name
+	nameLabel.TextStrokeTransparency = 0.5
+
+	local healthLabel = Instance.new("TextLabel")
+	healthLabel.Parent = billboard
+	healthLabel.Size = UDim2.new(1, 0, 0.5, 0)
+	healthLabel.Position = UDim2.new(0, 0, 0.5, 0)
+	healthLabel.BackgroundTransparency = 1
+	healthLabel.TextColor3 = Color3.new(0, 1, 0)
+	healthLabel.TextSize = 12
+	healthLabel.Font = Enum.Font.SourceSans
+	healthLabel.TextStrokeTransparency = 0.5
+
+	local nanIndex = 1
+	local lastSwitch = 0
+	local colors = {
+		Color3.fromRGB(255, 165, 0),   -- Orange
+		Color3.fromRGB(255, 69, 0),    -- Red Orange
+		Color3.fromRGB(255, 255, 0),   -- Yellow
+		Color3.fromRGB(0, 128, 0),     -- Green
+		Color3.fromRGB(0, 0, 255),     -- Blue
+		Color3.fromRGB(75, 0, 130),    -- Indigo
+		Color3.fromRGB(238, 130, 238)  -- Purple
+	}
+
+	local connection
+	connection = RunService.Heartbeat:Connect(function()
+		if not esp or not character or not character.Parent or not humanoid or not humanoid.Parent then
+			if billboard then billboard:Destroy() end
+			if connection then connection:Disconnect() end
+			return
+		end
+
+		local health = math.floor(humanoid.Health)
+		local maxHealth = math.floor(humanoid.MaxHealth)
+
+		-- Check if health is NaN (godmode detection)
+		if health ~= health then
+			healthLabel.Text = "Godmode"
+
+			local currentTime = tick()
+			if currentTime - lastSwitch >= 0.20 then
+				lastSwitch = currentTime
+				nanIndex = nanIndex + 1
+				if nanIndex > #colors then
+					nanIndex = 1
+				end
+			end
+			healthLabel.TextColor3 = colors[nanIndex]
+		else
+			healthLabel.Text = health .. "/" .. maxHealth .. " HP"
+			local pct = health / maxHealth
+
+			if pct > 0.5 then
+				healthLabel.TextColor3 = Color3.new(0, 1, 0)
+			elseif pct > 0.25 then
+				healthLabel.TextColor3 = Color3.new(1, 1, 0)
+			else
+				healthLabel.TextColor3 = Color3.new(1, 0, 0)
+			end
+		end
+	end)
+end
+
+local function updateESP()
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= player and v.Character then
+            local root = v.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local hasESP = root:FindFirstChild("PlayerESP")
+                if esp and not hasESP then
+                    createESP(v.Character)
+                elseif not esp and hasESP then
+                    hasESP:Destroy()
+                end
+            end
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(v)
+    v.CharacterAdded:Connect(function(char)
+        task.wait(0.5)
+        if esp then createESP(char) end
+    end)
+end)
+
+for _, v in pairs(Players:GetPlayers()) do
+    if v ~= player then
+        v.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            if esp then createESP(char) end
+        end)
+        if v.Character and esp then
+            createESP(v.Character)
+        end
+    end
+end
+
+spawn(function()
+    while task.wait(1) do
+        updateESP()
+    end
+end)
+
+-- MOBILE GUI
+local mobileGui = Instance.new("ScreenGui")
+mobileGui.Name = "MrPigMobile"
+mobileGui.ResetOnSpawn = false
+
+local mobileFrame = Instance.new("Frame")
+mobileFrame.Parent = mobileGui
+mobileFrame.Size = UDim2.new(0, 60, 0, 370)
+mobileFrame.Position = UDim2.new(0, 10, 0.5, -185)
+mobileFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+mobileFrame.BackgroundTransparency = 0.3
+mobileFrame.BorderSizePixel = 0
+
+local mc = Instance.new("UICorner")
+mc.CornerRadius = UDim.new(0, 10)
+mc.Parent = mobileFrame
+
+local function createMobileButton(name, yPos)
+    local btn = Instance.new("TextButton")
+    btn.Parent = mobileFrame
+    btn.Size = UDim2.new(0, 50, 0, 40)
+    btn.Position = UDim2.new(0, 5, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 8)
+    bc.Parent = btn
+    return btn
+end
+
+local auraBtn = createMobileButton("Aura", 10)
+local flyBtn = createMobileButton("Fly", 55)
+local espBtn = createMobileButton("ESP", 100)
+local godBtn = createMobileButton("God", 145)
+local giveBtn = createMobileButton("Give", 190)
+local viewBtn = createMobileButton("View", 235)
+local cmdBtn = createMobileButton("Cmd", 280)
+local rejoinBtn = createMobileButton("Rejn", 325)
+
+auraBtn.MouseButton1Click:Connect(function()
+    aura = not aura
+    auraBtn.BackgroundColor3 = aura and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+    sendNotification("Kill Aura", aura and "ON" or "OFF", 3)
+end)
+
+flyBtn.MouseButton1Click:Connect(function()
+    toggleFly()
+    flyBtn.BackgroundColor3 = fly and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+end)
+
+espBtn.MouseButton1Click:Connect(function()
+    esp = not esp
+    espBtn.BackgroundColor3 = esp and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+    sendNotification("ESP", esp and "ON" or "OFF", 3)
+end)
+
+godBtn.MouseButton1Click:Connect(function()
+    godmode = not godmode
+    godBtn.BackgroundColor3 = godmode and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+    sendNotification("Godmode", godmode and "ON" or "OFF", 3)
+end)
+
+giveBtn.MouseButton1Click:Connect(function()
+    if player.Character then
+        local root = player.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            local closestPlayer = nil
+            local closestDistance = 50
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= player and v.Character then
+                    local hum = v.Character:FindFirstChildOfClass("Humanoid")
+                    local hrp = v.Character:FindFirstChild("HumanoidRootPart")
+                    if hum and hrp then
+                        local distance = (root.Position - hrp.Position).Magnitude
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestPlayer = {humanoid = hum, player = v}
+                        end
+                    end
+                end
+            end
+            if closestPlayer then
+                pcall(function()
+                    RS:WaitForChild("SpecialAttackRemoteEvent_ChargedAttack"):FireServer(closestPlayer.humanoid, 0/0)
+                end)
+                sendNotification("Godmode Given", closestPlayer.player.Name, 3)
+            else
+                sendNotification("Failed", "No players nearby!", 3)
+            end
+        end
+    end
+end)
+
+viewBtn.MouseButton1Click:Connect(function()
+    if viewingPlayer then
+        unviewPlayer()
+        viewBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+    else
+        if player.Character then
+            local root = player.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local closestPlayer = nil
+                local closestDistance = math.huge
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v ~= player and v.Character then
+                        local hrp = v.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local distance = (root.Position - hrp.Position).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestPlayer = v
+                            end
+                        end
+                    end
+                end
+                if closestPlayer then
+                    viewPlayer(closestPlayer)
+                    viewBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+                else
+                    sendNotification("View", "No players!", 3)
+                end
+            end
+        end
+    end
+end)
+
+cmdBtn.MouseButton1Click:Connect(function()
+    toggleCommandBox()
+    cmdBtn.BackgroundColor3 = commandBoxVisible and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+end)
+
+rejoinBtn.MouseButton1Click:Connect(function()
+    sendNotification("Rejoining", "Rejoining...", 3)
+    task.wait(0.5)
+    local TeleportService = game:GetService("TeleportService")
+    pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end)
+    pcall(function() TeleportService:Teleport(game.PlaceId, player) end)
+end)
+
+local mobileDragging = false
+local mobileDragStart, mobileStartPos
+
+mobileFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        mobileDragging = true
+        mobileDragStart = input.Position
+        mobileStartPos = mobileFrame.Position
+    end
+end)
+
+mobileFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        mobileDragging = false
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if mobileDragging and input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - mobileDragStart
+        mobileFrame.Position = UDim2.new(mobileStartPos.X.Scale, mobileStartPos.X.Offset + delta.X, mobileStartPos.Y.Scale, mobileStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+mobileGui.Parent = player:WaitForChild("PlayerGui")
+
+spawn(function()
+    while task.wait(0.5) do
+        auraBtn.BackgroundColor3 = aura and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+        flyBtn.BackgroundColor3 = fly and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+        espBtn.BackgroundColor3 = esp and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+        godBtn.BackgroundColor3 = godmode and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+        cmdBtn.BackgroundColor3 = commandBoxVisible and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+        viewBtn.BackgroundColor3 = viewingPlayer and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+    end
+end)
+
+print("==========================================")
+print("🐷 MR.PIG SCRIPT LOADED - COMMAND BOX FIXED")
+print("Press ; or M for Command Box")
+print("==========================================" )
