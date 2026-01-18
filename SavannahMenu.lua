@@ -688,18 +688,26 @@ player.CharacterAdded:Connect(function(char)
                                     local distance = (root.Position - vhrp.Position).Magnitude
                                     if distance < closestDistance then
                                         closestDistance = distance
-                                        closestPlayer = {humanoid = vhum, player = v}
+                                        closestPlayer = {humanoid = vhum, player = v, hrp = vhrp}
                                     end
                                 end
                             end
                         end
                         
                         if closestPlayer then
+                            -- Enable kill aura if not already on
+                            if not aura then
+                                aura = true
+                                auraBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+                            end
+                            
+                            -- Instantly kill with health = 0
                             pcall(function()
                                 closestPlayer.humanoid.Health = 0
                             end)
                             addOutput("AUTO-RETALIATE: Killed " .. closestPlayer.player.Name, Color3.fromRGB(0, 255, 100))
                             sendNotification("Retaliate!", "Killed " .. closestPlayer.player.Name, 2)
+                            updateKeybindDisplay()
                         end
                     end
                 end
