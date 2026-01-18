@@ -1,12 +1,14 @@
 -- Savannah Life: Godmode + Kill Aura + Fly (FIXED COMMAND BOX – DEC 2025)
 -- FIX: Removed 'local' from outputFrame and commandGui creation
--- Added Daytime Command + Aura Speed Control
+-- Added Daytime Command + Aura Speed Control + Pounce Kill
 -- Press Z → Godmode
 -- Press T → Kill Aura (40 studs, safe delays, no kicks, targets closest)
 -- Press Y → Fly (UNIVERSAL - works on all executors)
 -- Press U → ESP
 -- Press P → Circle Mode
 -- Press O → Give Godmode to Others
+-- Press K → Quick Kill (while being pounced or grabbed)
+-- Press V → Auto-Retaliate (kill attackers instantly)
 -- Press L → Teleport
 -- Press M → Toggle Command Box
 -- Press ; → Open Command Box and start typing
@@ -69,6 +71,9 @@ local daytimeActive = false
 local daytimeConnection = nil
 local Lighting = game:GetService("Lighting")
 local auraSpeed = 0.1  -- Default aura speed for kill aura
+local autoRetaliate = false  -- Auto-kill when damaged
+local lastDamageTime = 0
+local damageCooldown = 0.5  -- Prevent spam kills
 
 -- SAFE NOTIFICATION FUNCTION
 local function sendNotification(title, text, duration)
@@ -658,6 +663,48 @@ player.CharacterAdded:Connect(function(char)
         if hum then
             workspace.CurrentCamera.CameraSubject = hum
         end
+    end
+    
+    -- Setup damage listener for auto-retaliation
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.HealthChanged:Connect(function(newHealth)
+            if autoRetaliate and newHealth < humanoid.MaxHealth and humanoid.Health > 0 then
+                local currentTime = tick()
+                if currentTime - lastDamageTime > damageCooldown then
+                    lastDamageTime = currentTime
+                    
+                    -- Find attacker (closest player)
+                    local root = char:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local closestPlayer = nil
+                        local closestDistance = 100
+                        
+                        for _, v in pairs(Players:GetPlayers()) do
+                            if v ~= player and v.Character then
+                                local vhum = v.Character:FindFirstChildOfClass("Humanoid")
+                                local vhrp = v.Character:FindFirstChild("HumanoidRootPart")
+                                if vhum and vhrp and vhum.Health > 0 then
+                                    local distance = (root.Position - vhrp.Position).Magnitude
+                                    if distance < closestDistance then
+                                        closestDistance = distance
+                                        closestPlayer = {humanoid = vhum, player = v}
+                                    end
+                                end
+                            end
+                        end
+                        
+                        if closestPlayer then
+                            pcall(function()
+                                closestPlayer.humanoid.Health = 0
+                            end)
+                            addOutput("AUTO-RETALIATE: Killed " .. closestPlayer.player.Name, Color3.fromRGB(0, 255, 100))
+                            sendNotification("Retaliate!", "Killed " .. closestPlayer.player.Name, 2)
+                        end
+                    end
+                end
+            end
+        end)
     end
 end)
 
@@ -1580,12 +1627,14 @@ chatHint.TextStrokeTransparency = 0.5
 
 function updateKeybindDisplay()
     keybindText.Text = string.format(
-        "Z-God %s | T-Aura %s | Y-Fly %s | U-ESP %s | P-Circle %s | Speed:%d",
+        "Z-God %s | T-Aura %s (Speed:%.2f) | Y-Fly %s | U-ESP %s | P-Circle %s | V-Retaliate %s | Speed:%d",
         godmode and "[ON]" or "[OFF]",
         aura and "[ON]" or "[OFF]",
+        auraSpeed,
         fly and "[ON]" or "[OFF]",
         esp and "[ON]" or "[OFF]",
         circleMode and "[ON]" or "[OFF]",
+        autoRetaliate and "[ON]" or "[OFF]",
         flySpeed
     )
 end
@@ -1747,6 +1796,50 @@ UIS.InputBegan:Connect(function(k, gp)
     if k.KeyCode == Enum.KeyCode.L then
         sendNotification("Teleporting", "Teleporting...", 3)
         spawn(function() teleportToLocation(Vector3.new(-6405, 3, 4551)) end)
+    end
+    
+    if k.KeyCode == Enum.KeyCode.K then
+        -- Quick Kill: Kill whoever is pouncing/attacking you
+        if player.Character then
+            local root = player.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local closestPlayer = nil
+                local closestDistance = 50
+                
+                -- Find closest player (likely the one pouncing you)
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v ~= player and v.Character then
+                        local hum = v.Character:FindFirstChildOfClass("Humanoid")
+                        local hrp = v.Character:FindFirstChild("HumanoidRootPart")
+                        if hum and hrp and hum.Health > 0 then
+                            local distance = (root.Position - hrp.Position).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestPlayer = {humanoid = hum, player = v}
+                            end
+                        end
+                    end
+                end
+                
+                if closestPlayer then
+                    -- Set their health to 0 (works when they're pouncing you)
+                    pcall(function()
+                        closestPlayer.humanoid.Health = 0
+                    end)
+                    sendNotification("Quick Kill!", closestPlayer.player.Name .. " eliminated!", 3)
+                    addOutput("Killed: " .. closestPlayer.player.Name, Color3.fromRGB(0, 255, 100))
+                else
+                    sendNotification("Failed", "No players nearby!", 3)
+                end
+            end
+        end
+    end
+    
+    if k.KeyCode == Enum.KeyCode.V then
+        autoRetaliate = not autoRetaliate
+        sendNotification("Auto-Retaliate", autoRetaliate and "ON - Kill attackers instantly!" or "OFF", 3)
+        addOutput("Auto-Retaliate: " .. (autoRetaliate and "ON" or "OFF"), autoRetaliate and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 100, 100))
+        updateKeybindDisplay()
     end
 end)
 
@@ -1989,8 +2082,9 @@ local espBtn = createMobileButton("ESP", 100)
 local godBtn = createMobileButton("God", 145)
 local giveBtn = createMobileButton("Give", 190)
 local viewBtn = createMobileButton("View", 235)
-local cmdBtn = createMobileButton("Cmd", 280)
-local rejoinBtn = createMobileButton("Rejn", 325)
+local retaliateBtn = createMobileButton("Retaliate", 280)
+local cmdBtn = createMobileButton("Cmd", 325)
+local rejoinBtn = createMobileButton("Rejn", 370)
 
 auraBtn.MouseButton1Click:Connect(function()
     aura = not aura
@@ -2077,6 +2171,13 @@ viewBtn.MouseButton1Click:Connect(function()
             end
         end
     end
+end)
+
+retaliateBtn.MouseButton1Click:Connect(function()
+    autoRetaliate = not autoRetaliate
+    retaliateBtn.BackgroundColor3 = autoRetaliate and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
+    sendNotification("Auto-Retaliate", autoRetaliate and "ON - Kill attackers instantly!" or "OFF", 3)
+    updateKeybindDisplay()
 end)
 
 cmdBtn.MouseButton1Click:Connect(function()
